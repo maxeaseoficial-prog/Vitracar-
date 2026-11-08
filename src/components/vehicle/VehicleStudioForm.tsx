@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { ArrowRight, CarFront, CheckCircle2, CircleAlert, Hash, Keyboard, Layers3, Save, Search, ShieldCheck } from 'lucide-react'
 import { Button, ErrorText, Field, Input, Select, Textarea } from '../UI'
 import { CarViewer } from '../CarViewer'
-import { getCatalog, categories, type CatalogCar } from '../../lib/catalog'
+import { getCatalog, categories, isUsableModel, type CatalogCar } from '../../lib/catalog'
+import { warmModel } from '../../lib/model-cache'
 import { useStore } from '../../lib/store'
 import { formatPlate, normalizePlate, validPlate } from '../../lib/utils'
 import type { Vehicle } from '../../types'
@@ -46,9 +47,22 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
     }
   },[])
   useEffect(()=>{void loadCatalog()},[loadCatalog])
+  const usableCars=useMemo(()=>cars.filter(isUsableModel),[cars])
   const selectedCar=useMemo(()=>cars.find(car=>car.id===model3d)||null,[cars,model3d])
+  useEffect(()=>{
+    if(!model3d)return
+    const index=usableCars.findIndex(car=>car.id===model3d)
+    if(index<0)return
+    // O carro vizinho já estará em cache se o usuário navegar pelo carrossel.
+    // Somente dois modelos leves, sem carregar a biblioteca inteira.
+    const timer=setTimeout(()=>{
+      warmModel(usableCars[index-1])
+      warmModel(usableCars[index+1])
+    },550)
+    return()=>clearTimeout(timer)
+  },[model3d,usableCars])
   const plateText=normalizePlate(plate)
-  const canRepaint=Boolean(selectedCar?.paint && selectedCar.paint.confidence!=='baixa')
+  const canRepaint=Boolean(selectedCar && isUsableModel(selectedCar) && selectedCar.paint && selectedCar.paint.confidence!=='baixa')
   const isColorAvailable=!selectedCar||canRepaint
   const canSubmit=validPlate(plate) && brand.trim().length>0 && model.trim().length>0 &&
     (manual || Boolean(selectedCar) || Boolean(vehicle?.model_3d_id&&model3d===vehicle.model_3d_id))
@@ -109,8 +123,12 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
 
     <div className="v-studio-grid">
       <div className="v-studio-left">
-        <VehiclePicker cars={cars} loading={loadingCatalog} error={catalogError}
+        <VehiclePicker cars={usableCars} loading={loadingCatalog} error={catalogError}
           selectedId={manual?'':model3d} onSelect={selectCar} onRetry={()=>void loadCatalog()}/>
+        {cars.length>usableCars.length&&<p className="v-qa-note">
+          {cars.length-usableCars.length} modelos incompletos foram ocultados do showroom.
+          Você ainda pode cadastrar esses veículos manualmente.
+        </p>}
         <div className="v-manual-toggle">
           <span>Não encontrou o veículo correto?</span>
           <button type="button" className="v-manual-button" onClick={manual?()=>setManual(false):enableManual}>

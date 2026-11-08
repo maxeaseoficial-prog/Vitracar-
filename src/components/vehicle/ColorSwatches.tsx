@@ -8,7 +8,7 @@ const presets = [
   {name:'Cinza',hex:'#646f7c'},
   {name:'Azul',hex:'#1259bf'},
   {name:'Vermelho',hex:'#b4242f'},
-  {name:'Verde',hex:'#367b61'},
+  {name:'Verde',hex:'#2fb66d'},
   {name:'Amarelo',hex:'#f6c343'},
   {name:'Bege',hex:'#d9c9ac'},
 ]

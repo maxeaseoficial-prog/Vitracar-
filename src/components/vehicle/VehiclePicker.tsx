@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, CarFront, ChevronLeft, ChevronRight, Search, SlidersHorizontal } from 'lucide-react'
 import type { CatalogCar } from '../../lib/catalog'
-import { categories } from '../../lib/catalog'
+import { categories, getModelThumbnailUrl } from '../../lib/catalog'
+import { warmModel } from '../../lib/model-cache'
 import { escapeSearch } from '../../lib/utils'
 
 const PAGE_SIZE = 8
@@ -20,16 +21,16 @@ function VehiclePhoto({car}:{car:CatalogCar}){
   const [failed,setFailed]=useState(false)
   const [loaded,setLoaded]=useState(false)
   // Referência para a fotografia original do mesmo modelo 3D.
-  const uid=car.credit.sourceUrl?.match(/([a-f0-9]{32})(?:\/)?(?:[?#].*)?$/i)?.[1]
-  useEffect(()=>{setFailed(false);setLoaded(false)},[uid])
+  const thumbnail=getModelThumbnailUrl(car)
+  useEffect(()=>{setFailed(false);setLoaded(false)},[thumbnail])
   return <span className="v-pick-photo-frame">
-    {uid&&!failed&&<img src={`/api/vehicle-image?uid=${uid}`} loading="lazy" decoding="async"
+    {thumbnail&&!failed&&<img src={thumbnail} loading="lazy" decoding="async"
       alt={`Prévia real: ${car.brand} ${car.model}`}
       className={loaded?'v-pick-photo loaded':'v-pick-photo'}
       onLoad={()=>setLoaded(true)} onError={()=>setFailed(true)}/>}
-    {(!uid||failed||!loaded)&&<span className="v-pick-photo-placeholder">
+    {(!thumbnail||failed||!loaded)&&<span className="v-pick-photo-placeholder">
       <CarFront size={28} strokeWidth={1.45}/>
-      <small>{failed||!uid?'Prévia indisponível':'Carregando foto...'}</small>
+      <small>{failed||!thumbnail?'Prévia indisponível':'Carregando foto...'}</small>
     </span>}
   </span>
 }
@@ -38,6 +39,15 @@ export function VehiclePicker({cars,selectedId,loading,error,onSelect,onRetry}:P
   const [query,setQuery] = useState('')
   const [brand,setBrand] = useState('all')
   const [page,setPage] = useState(0)
+  const hoverTimer=useRef<ReturnType<typeof setTimeout>|null>(null)
+  useEffect(()=>()=>{if(hoverTimer.current)clearTimeout(hoverTimer.current)},[])
+  const warmOnHover=(car:CatalogCar)=>{
+    if(hoverTimer.current)clearTimeout(hoverTimer.current)
+    hoverTimer.current=setTimeout(()=>warmModel(car),130)
+  }
+  const cancelHover=()=>{
+    if(hoverTimer.current){clearTimeout(hoverTimer.current);hoverTimer.current=null}
+  }
   const brands = useMemo(()=>[...new Set(cars.map(c=>c.brand))].sort((a,b)=>a.localeCompare(b,'pt-BR')),[cars])
   const filtered = useMemo(()=>{
     const q = escapeSearch(query.trim())
@@ -92,7 +102,7 @@ export function VehiclePicker({cars,selectedId,loading,error,onSelect,onRetry}:P
       <>
         <div className="v-pick-grid">
           {visible.map(car=><button key={car.id} type="button" className={`v-pick-card ${selectedId===car.id?'selected':''}`}
-            onClick={()=>onSelect(car)} aria-pressed={selectedId===car.id}
+            onClick={()=>{cancelHover();onSelect(car)}} onMouseEnter={()=>warmOnHover(car)} onMouseLeave={cancelHover} onFocus={()=>warmOnHover(car)} onBlur={cancelHover} aria-pressed={selectedId===car.id}
             title={`${car.brand} ${car.model} · ${car.years[0]} a ${car.years[1]}`}>
             <span className="v-pick-art"><VehiclePhoto car={car}/><span className="v-pick-3d">3D</span></span>
             <span className="v-pick-make">{car.brand}</span>
