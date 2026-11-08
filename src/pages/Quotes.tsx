@@ -30,7 +30,7 @@ export function Quotes(){
   }).sort((a,b)=>b.created_at.localeCompare(a.created_at))
   function changeService(id:string,patch:Partial<{chosen:boolean;quantity:number;price:string}>){
     const s=services.find(s=>s.id===id)!
-    setSelected(state=>({...state,[id]:{chosen:false,quantity:1,price:centsToPrice(s.price_cents),...state[id],...patch}}))
+    setSelected(state=>({...state,[id]:{...(state[id]||{chosen:false,quantity:1,price:centsToPrice(s.price_cents)}),...patch}}))
   }
   function newQuote(){
     setClientId('');setVehicleId('');setSelected({});setNotes('');setDiscount('0');setError(null);setOpen(true)

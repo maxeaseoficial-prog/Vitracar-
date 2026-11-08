@@ -44,11 +44,12 @@ export function DataProvider({companyId,profile,demo,children}:{
   const refresh=useCallback(async()=>{
     if(demo) return
     if(!isConfigured||!supabase) return
+    const db = supabase
     setLoading(true);setError(null)
     try {
       const [business,...tables]=await Promise.all([
-        supabase.from('company_settings').select('*').eq('id',companyId).single(),
-        ...names.map(name=>supabase.from(name).select('*').eq('company_id',companyId).limit(5000))
+        db.from('company_settings').select('*').eq('id',companyId).single(),
+        ...names.map(name=>db.from(name).select('*').eq('company_id',companyId).limit(5000))
       ])
       if(business.error) throw business.error
       setCompany(business.data as Company)
@@ -69,7 +70,7 @@ export function DataProvider({companyId,profile,demo,children}:{
     if(demo) {
       const row={id:id||uuid(),created_at:new Date().toISOString(),...payload}
       setData(prev=>{
-        const old=prev[table] as Record<string,unknown>[]
+        const old=prev[table] as unknown as Record<string,unknown>[]
         const rows=id?old.map(r=>r.id===id?{...r,...row}:r):[row,...old]
         return {...prev,[table]:rows}
       })
