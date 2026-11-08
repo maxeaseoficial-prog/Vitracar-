@@ -25,7 +25,7 @@ npm install
 npm run dev
 ~~~
 
-Sem variáveis de ambiente a aplicação abre em **modo de demonstração**, com dados fictícios e alterações temporárias mantidas apenas durante a sessão. Um banner de prévia permanece visível. **Não use a prévia para dados de clientes reais.**
+Sem variáveis de ambiente a aplicação abre em **modo de demonstração vazio**, sem clientes, veículos, serviços, orçamentos, agendas, despesas, pagamentos ou moedas pré-cadastrados. Os registros criados na prévia são temporários e desaparecem ao recarregar a página. Um aviso de ausência de banco permanece visível. **Não use a prévia para dados de clientes reais.**
 
 ## Banco de dados e autenticação
 
@@ -35,7 +35,7 @@ Sem variáveis de ambiente a aplicação abre em **modo de demonstração**, com
 4. Copie `.env.example` para `.env.local`.
 5. Preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` (chave pública do projeto).
 6. Execute `npm run dev`, crie seu primeiro usuário e cadastre o estabelecimento.
-7. Cadastre a identificação comercial em Configurações.
+7. Configure os dados comerciais na área administrativa, quando habilitada; a navegação Configurações está oculta no menu principal.
 
 O SQL inclui tabelas, chaves estrangeiras, validações, RLS multiempresa, funções de operação e buckets. Antes do uso real, é necessária validação em banco de testes com ao menos duas empresas e auditoria de políticas. Não execute diretamente em projetos Supabase existentes com dados importantes sem revisão prévia.
 

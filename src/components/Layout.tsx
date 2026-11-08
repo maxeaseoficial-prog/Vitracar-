@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { CalendarDays, CarFront, ChartNoAxesCombined, ChevronRight, CircleDollarSign, Coins, FileText,
-  LayoutDashboard, Menu, Settings2, Sparkles, Wrench, X } from 'lucide-react'
+import { CalendarDays, CarFront, ChevronRight, CircleDollarSign, Coins, FileText,
+  LayoutDashboard, Menu, Wrench, X } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { date } from '../lib/utils'
 
@@ -12,8 +12,7 @@ const menus=[
   {to:'/orcamentos',label:'Orçamentos',icon:FileText},
   {to:'/agenda',label:'Agenda',icon:CalendarDays},
   {to:'/financeiro',label:'Financeiro',icon:CircleDollarSign},
-  {to:'/fidelidade',label:'Fidelidade',icon:Coins},
-  {to:'/configuracoes',label:'Configurações',icon:Settings2}
+  {to:'/fidelidade',label:'Fidelidade',icon:Coins}
 ]
 export function Layout(){
   const {company,profile,isDemo}=useStore()
@@ -35,13 +34,12 @@ export function Layout(){
           <m.icon size={18} strokeWidth={1.85}/><span>{m.label}</span>{m.to===current.to&&<ChevronRight className="nav-arrow" size={15}/>}
         </NavLink>)}
       </nav>
-      <div className="sidebar-bottom">
-        <div className="sidebar-help"><Sparkles size={17}/><div><strong>VitraCar Studio</strong><small>Gestão com mais precisão.</small></div></div>
+      {!isDemo&&<div className="sidebar-bottom">
         <div className="user-compact"><div className="user-letter">{(profile.name||'A')[0]}</div><div><strong>{profile.name||'Administrador'}</strong><small>{profile.role==='admin'?'Administrador':'Colaborador'}</small></div></div>
-      </div>
+      </div>}
     </aside>
     <div className="app-main">
-      {isDemo&&<div className="demo-banner"><span className="demo-chip">PRÉVIA</span><strong>Modo de demonstração</strong><span>Dados ilustrativos, sem persistência em servidor. Configure o Supabase para operar.</span></div>}
+      {isDemo&&<div className="demo-banner"><span className="demo-chip">PRÉVIA</span><strong>Modo de demonstração</strong><span>Nenhum dado de exemplo cadastrado. Sem banco conectado, alterações são temporárias.</span></div>}
       <header className="topbar">
         <div className="topbar-left"><button className="menu-toggle" onClick={()=>setOpen(true)} aria-label="Abrir menu"><Menu size={20}/></button>
           <span className="breadcrumb-root">Workspace</span><ChevronRight size={14}/><span>{current.label}</span></div>

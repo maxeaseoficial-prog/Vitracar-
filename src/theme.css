@@ -54,3 +54,4 @@ body,.app-shell {background:var(--vc-ice);color:var(--vc-text)}
 .tag,.chip {background:#ecf3fb;color:#557797}
 .user-letter {background:#2a4465;color:#d8eafb}
 ::selection {background:#c5dfff;color:#1d355b}
+\n.sidebar-bottom .user-compact {padding-top:0}\n
