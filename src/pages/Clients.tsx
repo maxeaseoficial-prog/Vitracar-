@@ -12,14 +12,14 @@ import type { Client, Vehicle } from '../types'
 function ClientForm({client,onDone,onClose}:{client?:Client;onDone:()=>void;onClose:()=>void}){
   const {save,uploadClientPhoto,isDemo}=useStore()
   const [name,setName]=useState(client?.name||''),[whatsapp,setWhatsapp]=useState(client?.whatsapp||'')
-  const [birth,setBirth]=useState(client?.birth_date||''),[avatar,setAvatar]=useState(client?.avatar_kind||'male')
+  const [avatar,setAvatar]=useState(client?.avatar_kind||'male')
   const [notes,setNotes]=useState(client?.notes||''),[photo,setPhoto]=useState<File|null>(null)
   const [busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null)
   async function submit(e:FormEvent){
     e.preventDefault();setError(null);setBusy(true)
     try{
       if(name.trim().length<2)throw new Error('Informe o nome do cliente.')
-      const row=await save('clients',{name:name.trim(),whatsapp:whatsapp||null,birth_date:birth||null,
+      const row=await save('clients',{name:name.trim(),whatsapp:whatsapp||null,
         avatar_kind:avatar,notes:notes||null},client?.id)
       if(photo){
         const path=await uploadClientPhoto(String(row.id),photo)
@@ -33,7 +33,6 @@ function ClientForm({client,onDone,onClose}:{client?:Client;onDone:()=>void;onCl
     <div className="form-grid">
       <div className="span-2"><Field label="Nome completo"><Input required minLength={2} value={name} onChange={e=>setName(e.target.value)} placeholder="Nome e sobrenome"/></Field></div>
       <Field label="WhatsApp"><Input type="tel" inputMode="tel" value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} placeholder="(65) 99999-9999"/></Field>
-      <Field label="Nascimento"><Input type="date" value={birth} onChange={e=>setBirth(e.target.value)}/></Field>
       <Field label="Avatar padrão"><Select value={avatar} onChange={e=>setAvatar(e.target.value as 'male'|'female')}>
         <option value="male">Avatar masculino</option><option value="female">Avatar feminino</option>
       </Select></Field>
