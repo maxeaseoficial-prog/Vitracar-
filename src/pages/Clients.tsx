@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, CalendarPlus, CarFront, FilePlus2, History, Pencil, Plus, UserRound, Wallet } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Avatar, Button, CoinCount, Empty, ErrorText, Field, Input, PageHeading, Panel, SearchInput, Select, Status, TableWrap, Textarea } from '../components/UI'
 import { CarViewer } from '../components/CarViewer'
-import { getCatalog, categories, type CatalogCar } from '../lib/catalog'
+import { categories } from '../lib/catalog'
+import { VehicleStudioForm } from '../components/vehicle/VehicleStudioForm'
 import { useStore } from '../lib/store'
-import { date, dateTime, escapeSearch, formatPlate, normalizePlate, validPlate, money, number, sum } from '../lib/utils'
-import type { Client, Vehicle } from '../types'
+import { date, dateTime, escapeSearch, formatPlate, money, number, sum } from '../lib/utils'
+import type { Client } from '../types'
 
 function ClientForm({client,onDone,onClose}:{client?:Client;onDone:()=>void;onClose:()=>void}){
   const {save,uploadClientPhoto,isDemo}=useStore()
@@ -44,65 +45,6 @@ function ClientForm({client,onDone,onClose}:{client?:Client;onDone:()=>void;onCl
     <ErrorText message={error}/>
     <div className="form-actions"><Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
       <Button type="submit" disabled={busy}>{busy?'Salvando...':'Salvar cliente'}</Button></div>
-  </form>
-}
-function VehicleForm({clientId,vehicle,onDone,onClose}:{clientId:string;vehicle?:Vehicle;onDone:()=>void;onClose:()=>void}){
-  const {save}=useStore()
-  const [plate,setPlate]=useState(vehicle?.plate||''),[brand,setBrand]=useState(vehicle?.brand||'')
-  const [model,setModel]=useState(vehicle?.model||''),[year,setYear]=useState(vehicle?.year?.toString()||'')
-  const [color,setColor]=useState(vehicle?.color||'Prata'),[category,setCategory]=useState(vehicle?.category||'')
-  const [upholstery,setUpholstery]=useState(vehicle?.upholstery||'Tecido')
-  const [model3d,setModel3d]=useState(vehicle?.model_3d_id||'')
-  const [notes,setNotes]=useState(vehicle?.notes||'')
-  const [cars,setCars]=useState<CatalogCar[]>([]),[catalogError,setCatalogError]=useState(false)
-  const [busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null)
-  useEffect(()=>{let active=true;void getCatalog().then(c=>{if(active)setCars(c)}).catch(()=>{if(active)setCatalogError(true)});return()=>{active=false}},[])
-  const brands=useMemo(()=>[...new Set(cars.map(c=>c.brand))],[cars])
-  const models=cars.filter(c=>escapeSearch(c.brand)===escapeSearch(brand))
-  useEffect(()=>{
-    if(vehicle||!brand||!model)return
-    const exact=cars.find(c=>escapeSearch(c.brand)===escapeSearch(brand)&&escapeSearch(c.model)===escapeSearch(model))
-    if(exact){setModel3d(exact.id);if(!category)setCategory(exact.category)}
-  },[brand,model,cars,vehicle,category])
-  async function submit(e:FormEvent){
-    e.preventDefault();setError(null);setBusy(true)
-    try {
-      if(!validPlate(plate))throw new Error('Placa inválida. Use ABC-1234 ou ABC1D23.')
-      if(!brand.trim()||!model.trim())throw new Error('Informe marca e modelo.')
-      const y=year?Number(year):null
-      if(y&&(!Number.isInteger(y)||y<1900||y>2100))throw new Error('Ano inválido.')
-      await save('vehicles',{client_id:clientId,plate:normalizePlate(plate),brand:brand.trim(),
-        model:model.trim(),year:y,color,category:category||null,upholstery:upholstery||null,
-        model_3d_id:model3d||null,notes:notes||null},vehicle?.id)
-      onDone()
-    }catch(e){setError(e instanceof Error?e.message:String(e))}
-    finally{setBusy(false)}
-  }
-  return <form onSubmit={submit}>
-    <div className="form-grid">
-      <Field label="Placa brasileira"><Input required value={plate} maxLength={8} onChange={e=>setPlate(e.target.value.toUpperCase())} placeholder="ABC1D23"/></Field>
-      <Field label="Marca"><Input required list="car-brands" value={brand} onChange={e=>{setBrand(e.target.value);setModel3d('')}} placeholder="Ex.: Honda"/>
-        <datalist id="car-brands">{brands.map(b=><option key={b} value={b}/>)}</datalist></Field>
-      <Field label="Modelo"><Input required list="car-models" value={model} onChange={e=>{setModel(e.target.value);setModel3d('')}} placeholder="Ex.: Civic"/>
-        <datalist id="car-models">{models.map(c=><option value={c.model} key={c.id}/>)}</datalist></Field>
-      <Field label="Ano"><Input type="number" min="1900" max="2100" value={year} onChange={e=>setYear(e.target.value)} placeholder="2024"/></Field>
-      <Field label="Cor"><Input required value={color} onChange={e=>setColor(e.target.value)} placeholder="Ex.: Prata"/></Field>
-      <Field label="Categoria"><Select value={category} onChange={e=>setCategory(e.target.value)}>
-        <option value="">Selecione</option>{Object.entries(categories).map(([id,title])=><option key={id} value={id}>{title}</option>)}
-      </Select></Field>
-      <Field label="Tipo de estofado"><Select value={upholstery} onChange={e=>setUpholstery(e.target.value)}>
-        <option value="Tecido">Tecido</option><option value="Couro">Couro</option><option value="Sintético">Sintético</option><option value="Outro">Outro</option>
-      </Select></Field>
-      <Field label="Modelo 3D associado" hint={catalogError?'Catálogo indisponível; continue sem 3D.':'Escolha somente o modelo correspondente ao veículo.'}>
-        <Select value={model3d} onChange={e=>setModel3d(e.target.value)}>
-          <option value="">Sem 3D / não encontrado</option>{models.map(c=><option key={c.id} value={c.id}>{c.model} ({c.years.join('–')})</option>)}
-        </Select>
-      </Field>
-      <div className="span-2"><Field label="Observações"><Textarea rows={2} value={notes} onChange={e=>setNotes(e.target.value)}/></Field></div>
-    </div>
-    <ErrorText message={error}/>
-    <div className="form-actions"><Button variant="secondary" type="button" onClick={onClose}>Cancelar</Button>
-      <Button type="submit" disabled={busy}>{busy?'Salvando...':'Salvar veículo'}</Button></div>
   </form>
 }
 export function Clients(){
@@ -197,7 +139,7 @@ export function ClientProfile(){
     </div>
     {showClient&&<Modal title="Editar cliente" wide onClose={()=>setShowClient(false)}><ClientForm client={client}
       onDone={()=>setShowClient(false)} onClose={()=>setShowClient(false)}/></Modal>}
-    {vehicleModal&&<Modal title="Adicionar veículo" wide onClose={()=>setVehicleModal(false)}><VehicleForm clientId={client.id}
+    {vehicleModal&&<Modal title="Adicionar veículo" showroom onClose={()=>setVehicleModal(false)}><VehicleStudioForm clientId={client.id}
       onDone={()=>setVehicleModal(false)} onClose={()=>setVehicleModal(false)}/></Modal>}
   </>
 }
@@ -222,7 +164,7 @@ export function VehicleDetail(){
       actions={<><Button variant="secondary" onClick={()=>navigate(`/clientes/${v.client_id}`)}><ArrowLeft size={15}/> Perfil</Button>
         <Button variant="secondary" onClick={()=>setEditing(true)}><Pencil size={15}/> Editar</Button></>}/>
     <div className="vehicle-detail-grid">
-      <CarViewer modelId={v.model_3d_id} color={v.color}/>
+      <CarViewer modelId={v.model_3d_id} color={v.color} plate={v.plate}/>
       <Panel title="Ficha do veículo">
         {info.map(([label,value])=><div className="detail-line" key={label}><span>{label}</span><strong>{value}</strong></div>)}
         <div className="detail-cta">
@@ -240,7 +182,7 @@ export function VehicleDetail(){
       </TableWrap>:<Empty title="Sem histórico de serviços" description="Os atendimentos concluídos aparecerão aqui."/>}
     </Panel>
     {v.notes&&<Panel title="Observações" className="settings-section"><p className="small-note">{v.notes}</p></Panel>}
-    {editing&&<Modal title="Editar veículo" wide onClose={()=>setEditing(false)}><VehicleForm clientId={v.client_id} vehicle={v}
+    {editing&&<Modal title="Editar veículo" showroom onClose={()=>setEditing(false)}><VehicleStudioForm clientId={v.client_id} vehicle={v}
       onDone={()=>setEditing(false)} onClose={()=>setEditing(false)}/></Modal>}
   </>
 }
