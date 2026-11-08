@@ -1,7 +1,7 @@
 import { Component, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Bounds, Center, ContactShadows, Html, OrbitControls, useGLTF } from '@react-three/drei'
-import { Box3, CanvasTexture, DoubleSide, Mesh, MeshStandardMaterial, SRGBColorSpace, Vector3 } from 'three'
+import { Box3, CanvasTexture, DoubleSide, Mesh, MeshStandardMaterial, SRGBColorSpace, Vector3, type Material } from 'three'
 import { AlertCircle, Box, ExternalLink, RotateCcw } from 'lucide-react'
 import { getAssetUrl, getCatalog, paintColor, type CatalogCar } from '../lib/catalog'
 import { normalizePlate } from '../lib/utils'
@@ -76,13 +76,19 @@ function Model({car,color,plate}:{car:CatalogCar;color:string;plate:string}){
       const named=new Set(car.paint.materials)
       model.traverse(child=>{
         if(!(child instanceof Mesh))return
-        const materials=Array.isArray(child.material)?child.material:[child.material]
-        child.material=materials.map(mat=>{
+        // Three.js exige material único para meshes sem geometry.groups.
+        // Transformar material único em array deixa a carroceria invisível.
+        const repaint=(mat:Material):Material=>{
           if(!(mat instanceof MeshStandardMaterial)||!named.has(mat.name))return mat
           const own=mat.clone()
           paintMaterials.push(own)
           return own
-        })
+        }
+        if(Array.isArray(child.material)){
+          child.material=child.material.map(repaint)
+        }else{
+          child.material=repaint(child.material)
+        }
       })
     }
     return {model,bounds:new Box3().setFromObject(model),paintMaterials}

@@ -16,28 +16,22 @@ type Props = {
   onRetry: () => void
 }
 
-function VehicleSilhouette({ category }: { category: string }) {
-  const tall = ['suv','pickup','van','utility','minivan'].includes(category)
-  return <svg className="v-pick-illustration" viewBox="0 0 156 84" aria-hidden="true">
-    <defs>
-      <linearGradient id="vehicle-silhouette-gradient" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stopColor="#6e94c9" stopOpacity=".74"/>
-        <stop offset="1" stopColor="#244c8f" stopOpacity=".92"/>
-      </linearGradient>
-    </defs>
-    <ellipse cx="80" cy="69" rx="61" ry="7" fill="#bcd0eb" opacity=".35"/>
-    <path fill="url(#vehicle-silhouette-gradient)"
-      d={tall
-        ? 'M16 49 L23 34 Q25 28 38 26 L52 25 L64 12 Q68 8 78 8 L112 8 Q121 8 126 18 L134 42 L144 48 L144 62 L12 62 L12 54 Z'
-        : 'M13 49 L28 43 L50 39 L65 23 Q69 18 81 18 L109 19 Q118 19 123 28 L132 42 L144 49 L147 61 L10 61 Z'}/>
-    <path fill="#d8ebff" opacity=".72" d={tall
-      ? 'M67 16 L113 16 Q118 16 121 24 L126 42 L51 42 Z'
-      : 'M68 26 Q73 24 82 24 L110 25 Q115 25 119 33 L124 42 L52 41 Z'}/>
-    <path d="M80 23 L81 43 M51 41 L126 43" stroke="#3e6094" strokeWidth="2" opacity=".7"/>
-    <circle cx="42" cy="61" r="15" fill="#1d2d45"/><circle cx="42" cy="61" r="8" fill="#ccd6e6"/>
-    <circle cx="116" cy="61" r="15" fill="#1d2d45"/><circle cx="116" cy="61" r="8" fill="#ccd6e6"/>
-    <path d="M14 52 L24 49 M135 49 L145 52" stroke="#c1dfff" strokeWidth="4" strokeLinecap="round"/>
-  </svg>
+function VehiclePhoto({car}:{car:CatalogCar}){
+  const [failed,setFailed]=useState(false)
+  const [loaded,setLoaded]=useState(false)
+  // Referência para a fotografia original do mesmo modelo 3D.
+  const uid=car.credit.sourceUrl?.match(/([a-f0-9]{32})(?:\/)?(?:[?#].*)?$/i)?.[1]
+  useEffect(()=>{setFailed(false);setLoaded(false)},[uid])
+  return <span className="v-pick-photo-frame">
+    {uid&&!failed&&<img src={`/api/vehicle-image?uid=${uid}`} loading="lazy" decoding="async"
+      alt={`Prévia real: ${car.brand} ${car.model}`}
+      className={loaded?'v-pick-photo loaded':'v-pick-photo'}
+      onLoad={()=>setLoaded(true)} onError={()=>setFailed(true)}/>}
+    {(!uid||failed||!loaded)&&<span className="v-pick-photo-placeholder">
+      <CarFront size={28} strokeWidth={1.45}/>
+      <small>{failed||!uid?'Prévia indisponível':'Carregando foto...'}</small>
+    </span>}
+  </span>
 }
 
 export function VehiclePicker({cars,selectedId,loading,error,onSelect,onRetry}:Props) {
@@ -100,7 +94,7 @@ export function VehiclePicker({cars,selectedId,loading,error,onSelect,onRetry}:P
           {visible.map(car=><button key={car.id} type="button" className={`v-pick-card ${selectedId===car.id?'selected':''}`}
             onClick={()=>onSelect(car)} aria-pressed={selectedId===car.id}
             title={`${car.brand} ${car.model} · ${car.years[0]} a ${car.years[1]}`}>
-            <span className="v-pick-art"><VehicleSilhouette category={car.category}/><span className="v-pick-3d">3D</span></span>
+            <span className="v-pick-art"><VehiclePhoto car={car}/><span className="v-pick-3d">3D</span></span>
             <span className="v-pick-make">{car.brand}</span>
             <strong className="v-pick-model">{car.model}</strong>
             <small>{categories[car.category]||'Veículo'} · {car.years[0]}–{car.years[1]}</small>

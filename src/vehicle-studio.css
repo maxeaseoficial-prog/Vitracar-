@@ -141,3 +141,14 @@
  .v-preview-placeholder{height:350px}
  .v-studio-footer .btn{flex:1}
 }
+
+
+/* Miniaturas reais do catálogo original Sketchfab; sem desenhos genéricos */
+.v-pick-photo-frame{height:100%;width:100%;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:9px;background:linear-gradient(145deg,#e8eff9,#f9fbff)}
+.v-pick-photo{position:absolute;inset:0;height:100%;width:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity .24s ease}
+.v-pick-photo.loaded{opacity:1}
+.v-pick-photo-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;background:linear-gradient(130deg,#f0f6ff,#e0ebf9);color:#8ba9cc}
+.v-pick-photo-placeholder small{font-size:9px!important;font-weight:600;color:#8b9fb9!important;max-width:100%;text-align:center;white-space:normal!important;line-height:1.25}
+.v-pick-art:has(.v-pick-photo.loaded){background:#eaf1fa}
+.v-pick-card .v-pick-art{height:82px}
+.v-pick-3d{z-index:2}
