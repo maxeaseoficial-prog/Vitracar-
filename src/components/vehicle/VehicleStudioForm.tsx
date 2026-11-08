@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { ArrowRight, CarFront, CheckCircle2, CircleAlert, Hash, Keyboard, Layers3, Save, Search, ShieldCheck } from 'lucide-react'
 import { Button, ErrorText, Field, Input, Select, Textarea } from '../UI'
 import { CarViewer } from '../CarViewer'
+import { QuickCarViewer } from './QuickCarViewer'
 import { getCatalog, categories, isUsableModel, type CatalogCar } from '../../lib/catalog'
-import { warmModel } from '../../lib/model-cache'
 import { useStore } from '../../lib/store'
 import { formatPlate, normalizePlate, validPlate } from '../../lib/utils'
 import type { Vehicle } from '../../types'
@@ -28,6 +28,7 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
   const [upholstery,setUpholstery]=useState(vehicle?.upholstery||'Tecido')
   const [model3d,setModel3d]=useState(vehicle?.model_3d_id||'')
   const [notes,setNotes]=useState(vehicle?.notes||'')
+  const [viewMode,setViewMode]=useState<'quick'|'original'>('quick')
   const [manual,setManual]=useState(Boolean(vehicle&&!vehicle.model_3d_id))
   const [cars,setCars]=useState<CatalogCar[]>([])
   const [loadingCatalog,setLoadingCatalog]=useState(true)
@@ -47,23 +48,11 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
     }
   },[])
   useEffect(()=>{void loadCatalog()},[loadCatalog])
-  const usableCars=useMemo(()=>cars.filter(isUsableModel),[cars])
+  // Mostrar todos os registros de marcas e modelos: o 3D leve não depende do GLB original.
   const selectedCar=useMemo(()=>cars.find(car=>car.id===model3d)||null,[cars,model3d])
-  useEffect(()=>{
-    if(!model3d)return
-    const index=usableCars.findIndex(car=>car.id===model3d)
-    if(index<0)return
-    // O carro vizinho já estará em cache se o usuário navegar pelo carrossel.
-    // Somente dois modelos leves, sem carregar a biblioteca inteira.
-    const timer=setTimeout(()=>{
-      warmModel(usableCars[index-1])
-      warmModel(usableCars[index+1])
-    },550)
-    return()=>clearTimeout(timer)
-  },[model3d,usableCars])
   const plateText=normalizePlate(plate)
   const canRepaint=Boolean(selectedCar && isUsableModel(selectedCar) && selectedCar.paint && selectedCar.paint.confidence!=='baixa')
-  const isColorAvailable=!selectedCar||canRepaint
+  const isColorAvailable=viewMode==='quick'||!selectedCar||canRepaint
   const canSubmit=validPlate(plate) && brand.trim().length>0 && model.trim().length>0 &&
     (manual || Boolean(selectedCar) || Boolean(vehicle?.model_3d_id&&model3d===vehicle.model_3d_id))
 
@@ -73,11 +62,13 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
     setModel(car.model)
     setCategory(car.category)
     setManual(false)
+    setViewMode('quick')
     setError(null)
   }
 
   function enableManual(){
     setManual(true)
+    setViewMode('quick')
     setModel3d('')
     setBrand('')
     setModel('')
@@ -117,18 +108,14 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
     <div className="v-studio-intro">
       <div className="v-studio-intro-icon"><Layers3 size={23}/></div>
       <div><strong>Sua garagem, em três dimensões.</strong>
-        <p>Encontre o modelo, personalize a cor e veja a placa mudar antes de salvar.</p></div>
+        <p>3D instantâneo por categoria, cor e placa ao vivo. O modelo exato continua identificado pela foto e pelo cadastro.</p></div>
       <span className="v-studio-intro-chip"><span/> VISUALIZAÇÃO AO VIVO</span>
     </div>
 
     <div className="v-studio-grid">
       <div className="v-studio-left">
-        <VehiclePicker cars={usableCars} loading={loadingCatalog} error={catalogError}
+        <VehiclePicker cars={cars} loading={loadingCatalog} error={catalogError}
           selectedId={manual?'':model3d} onSelect={selectCar} onRetry={()=>void loadCatalog()}/>
-        {cars.length>usableCars.length&&<p className="v-qa-note">
-          {cars.length-usableCars.length} modelos incompletos foram ocultados do showroom.
-          Você ainda pode cadastrar esses veículos manualmente.
-        </p>}
         <div className="v-manual-toggle">
           <span>Não encontrou o veículo correto?</span>
           <button type="button" className="v-manual-button" onClick={manual?()=>setManual(false):enableManual}>
@@ -153,10 +140,22 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
         <div className="v-preview-head"><div><span className="v-studio-step">PRÉVIA</span>
           <strong>{manual?(brand&&model?`${brand} ${model}`:'Veículo sem modelo 3D') :
             selectedCar?`${selectedCar.brand} ${selectedCar.model}`:'Selecione um veículo'}</strong>
-          {selectedCar&&<small>{categories[selectedCar.category]||selectedCar.category} · Modelo 3D do catálogo</small>}
+          {(selectedCar||manual)&&<small>{categories[selectedCar?.category||category]||'Veículo'} ·
+            {viewMode==='quick'?' Prévia 3D ilustrativa por categoria':' Modelo 3D original (experimental)'}</small>}
         </div><span className="v-preview-live"><span/> AO VIVO</span></div>
 
-        {selectedCar&&!manual?<CarViewer modelId={selectedCar.id} car={selectedCar} color={color} plate={plate} variant="studio"/>:
+        {(selectedCar||manual)&&<div className="v-mode-switch" role="group" aria-label="Modo de visualização do veículo">
+          <button type="button" aria-pressed={viewMode==='quick'} className={viewMode==='quick'?'active':''}
+            onClick={()=>setViewMode('quick')}>3D leve · instantâneo</button>
+          <button type="button" aria-pressed={viewMode==='original'} className={viewMode==='original'?'active':''}
+            disabled={!selectedCar||manual||!isUsableModel(selectedCar)}
+            title={!selectedCar||manual||!isUsableModel(selectedCar)?'O modelo original não está disponível ou está incompleto.':'Ver arquivo 3D original'}
+            onClick={()=>setViewMode('original')}>Original · experimental</button>
+        </div>}
+        {(selectedCar||manual)?
+          viewMode==='original'&&selectedCar&&!manual?
+            <CarViewer modelId={selectedCar.id} car={selectedCar} color={color} plate={plate} variant="studio"/>:
+            <QuickCarViewer category={selectedCar?.category||category||'sedan'} color={color} plate={plate} variant="studio"/>:
           <div className="v-preview-placeholder">
             <div className="v-preview-placeholder-art"><CarFront size={60} strokeWidth={1.25}/></div>
             <strong>{manual?'Cadastro sem 3D':'Seu próximo veículo aparece aqui'}</strong>
@@ -165,6 +164,10 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
             <div className="v-placeholder-plate"><span>BRASIL</span><strong>{plateText||'ABC1D23'}</strong></div>
           </div>}
 
+        {viewMode==='original'&&<p className="v-original-warning">
+          O modelo original pode apresentar peças incompletas, pintura incorreta ou carregamento demorado.
+          Use o 3D leve para uma prévia consistente.
+        </p>}
         <ColorSwatches value={color} onChange={setColor} canRepaint={isColorAvailable}/>
       </div>
     </div>
@@ -204,7 +207,7 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
 
     {error&&<ErrorText message={error}/>}
     <div className="v-studio-footer">
-      <p><CircleAlert size={15}/> O modelo 3D representa uma versão ilustrativa. A cor e a placa informadas ficam salvas no cadastro.</p>
+      <p><CircleAlert size={15}/> O 3D leve representa a categoria do veículo, não o design exato da marca. A placa, a cor e o modelo escolhido são salvos corretamente.</p>
       <div><Button variant="secondary" type="button" onClick={onClose}>Cancelar</Button>
         <Button type="submit" disabled={saving||!canSubmit}><Save size={16}/>{saving?'Salvando...':vehicle?'Salvar alterações':'Adicionar veículo'}</Button>
       </div>

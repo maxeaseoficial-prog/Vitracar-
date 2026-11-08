@@ -4,6 +4,7 @@ import { ArrowLeft, CalendarPlus, CarFront, FilePlus2, History, Pencil, Plus, Us
 import { Modal } from '../components/Modal'
 import { Avatar, Button, CoinCount, Empty, ErrorText, Field, Input, PageHeading, Panel, SearchInput, Select, Status, TableWrap, Textarea } from '../components/UI'
 import { CarViewer } from '../components/CarViewer'
+import { QuickCarViewer } from '../components/vehicle/QuickCarViewer'
 import { categories } from '../lib/catalog'
 import { VehicleStudioForm } from '../components/vehicle/VehicleStudioForm'
 import { useStore } from '../lib/store'
@@ -146,6 +147,7 @@ export function ClientProfile(){
 export function VehicleDetail(){
   const {id}=useParams(),{data}=useStore(),navigate=useNavigate()
   const [editing,setEditing]=useState(false)
+  const [viewMode,setViewMode]=useState<'quick'|'original'>('quick')
   const v=data.vehicles.find(x=>x.id===id)
   if(!v)return <Empty title="Veículo não encontrado" action={<Button onClick={()=>navigate('/clientes')}>Voltar</Button>}/>
   const client=data.clients.find(c=>c.id===v.client_id)
@@ -164,7 +166,17 @@ export function VehicleDetail(){
       actions={<><Button variant="secondary" onClick={()=>navigate(`/clientes/${v.client_id}`)}><ArrowLeft size={15}/> Perfil</Button>
         <Button variant="secondary" onClick={()=>setEditing(true)}><Pencil size={15}/> Editar</Button></>}/>
     <div className="vehicle-detail-grid">
-      <CarViewer modelId={v.model_3d_id} color={v.color} plate={v.plate}/>
+      <div>
+        <div className="v-mode-switch v-detail-mode" role="group" aria-label="Modo de visualização">
+          <button type="button" className={viewMode==='quick'?'active':''} aria-pressed={viewMode==='quick'}
+            onClick={()=>setViewMode('quick')}>3D leve · instantâneo</button>
+          <button type="button" className={viewMode==='original'?'active':''} aria-pressed={viewMode==='original'}
+            disabled={!v.model_3d_id} onClick={()=>setViewMode('original')}>3D original</button>
+        </div>
+        {viewMode==='original'&&v.model_3d_id?
+          <CarViewer modelId={v.model_3d_id} color={v.color} plate={v.plate}/>:
+          <QuickCarViewer category={v.category||'sedan'} color={v.color} plate={v.plate} variant="standard"/>}
+      </div>
       <Panel title="Ficha do veículo">
         {info.map(([label,value])=><div className="detail-line" key={label}><span>{label}</span><strong>{value}</strong></div>)}
         <div className="detail-cta">

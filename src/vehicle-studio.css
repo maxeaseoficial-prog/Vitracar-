@@ -164,3 +164,25 @@
 .viewer-poster-static{background:#f0f5fc}
 .viewer-poster-spinner{width:17px;height:17px;border:2px solid #d9e5f6;border-top-color:#196bd5;border-radius:50%;animation:spin 1s linear infinite}
 .viewer-shell>.viewer-controls,.viewer-shell>.v-live-plate{z-index:3}
+
+/* Visualização 3D rápida, padronizada e com cor própria (sem GLB externo). */
+.v-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:0 3px 11px;padding:4px;background:#e8eff8;border:1px solid #dce7f5;border-radius:11px}
+.v-mode-switch button{border:0;border-radius:8px;background:transparent;min-height:35px;white-space:normal;padding:7px 9px;font-size:11px;font-weight:800;line-height:1.3;color:#8293a6;transition:background .15s,color .15s}
+.v-mode-switch button.active{background:#fff;color:#155bc7;box-shadow:0 2px 8px #16416b14}
+.v-mode-switch button:not(:disabled):hover{color:#1763d0}
+.v-mode-switch button:disabled{opacity:.43;cursor:not-allowed}
+.v-detail-mode{margin-bottom:11px;max-width:460px}
+.viewer-quick .viewer-shell{background:radial-gradient(ellipse at 54% 46%,#fff 0%,#f0f6ff 70%,#e8f1fc 100%);height:337px;min-height:337px}
+.viewer-quick.viewer-frame:not(.viewer-studio-mode) .viewer-shell{height:390px;min-height:390px}
+.viewer-quick .viewer-controls{z-index:3}
+.v-quick-badge{position:absolute;left:14px;top:12px;z-index:2;pointer-events:none;padding:6px 9px;border:1px solid #d8e7fa;border-radius:6px;background:#fffffff0;color:#49739d;font-size:9px;letter-spacing:.8px;font-weight:900}
+.v-original-warning{font-size:10px;color:#8f6c42;background:#fff6e9;border:1px solid #f4e4c8;border-radius:9px;line-height:1.55;padding:10px 12px;margin:9px 3px}
+@media(max-width:1100px){
+ .viewer-quick .viewer-shell{height:295px;min-height:295px}
+}
+@media(max-width:520px){
+ .v-mode-switch button{font-size:10px;padding:7px}
+ .viewer-quick .viewer-shell{height:265px;min-height:265px}
+ .viewer-quick.viewer-frame:not(.viewer-studio-mode) .viewer-shell{height:300px;min-height:300px}
+ .v-quick-badge{font-size:8px}
+}
