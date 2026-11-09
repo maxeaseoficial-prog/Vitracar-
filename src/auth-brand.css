@@ -1,22 +1,43 @@
-/* Tela de acesso: painel azul limpo, sem elementos verdes. */
+/* Identidade das telas de autenticação. Não altera o restante do sistema. */
 .auth-shell .auth-brand {
-  background: var(--vc-blue, #0131cd);
-  color: #fff;
+  background: #0131cd;
+  color: #ffffff;
 }
+
 .auth-shell .auth-brand::before,
 .auth-shell .auth-brand::after {
   content: none;
   display: none;
 }
-.auth-shell .auth-brand .auth-logo,
-.auth-shell .auth-brand .auth-logo span,
+
+.auth-shell .auth-brand .auth-logo {
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.auth-shell .auth-brand .auth-logo-image {
+  display: block;
+  width: 300px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: left center;
+}
+
 .auth-shell .auth-brand .auth-hero h1,
 .auth-shell .auth-brand .auth-hero h1 span,
 .auth-shell .auth-brand .auth-hero p,
 .auth-shell .auth-brand .auth-foot {
-  color: #fff;
+  color: #ffffff;
 }
-.auth-shell .auth-brand ::selection {
-  background: #fff;
-  color: #0131cd;
+
+@media (max-width: 640px) {
+  .auth-shell .auth-brand .auth-logo-image {
+    width: 230px;
+  }
 }

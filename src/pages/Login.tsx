@@ -2,6 +2,13 @@ import { useState, type FormEvent } from 'react'
 import { ArrowRight, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { Button, ErrorText, Field, Input } from '../components/UI'
 import { supabase } from '../lib/supabase'
+import '../auth-brand.css'
+
+function AuthLogo(){
+  return <div className="auth-logo">
+    <img src="/vitracar-logo-white.png" alt="VitraCar" className="auth-logo-image" loading="eager" decoding="async"/>
+  </div>
+}
 
 export function Login(){
   const [signup,setSignup]=useState(false)
@@ -27,7 +34,7 @@ export function Login(){
   }
   return <div className="auth-shell">
     <div className="auth-brand">
-      <div className="auth-logo">VITRA<span>CAR</span></div>
+      <AuthLogo/>
       <div className="auth-hero">
         <h1>Seu negócio merece uma <span>gestão de alto nível.</span></h1>
         <p>Clientes, veículos, orçamentos, finanças e fidelidade em uma plataforma feita para estética automotiva.</p>
@@ -67,7 +74,7 @@ export function Onboarding({onDone}:{onDone:()=>Promise<void>}){
     finally{setWorking(false)}
   }
   return <div className="auth-shell">
-    <div className="auth-brand"><div className="auth-logo">VITRA<span>CAR</span></div>
+    <div className="auth-brand"><AuthLogo/>
       <div className="auth-hero"><h1>Vamos preparar sua <span>operação.</span></h1>
         <p>Um painel exclusivo para seu estabelecimento, com dados protegidos por empresa.</p></div>
       <div className="auth-foot">Acesso restrito a membros autorizados.</div></div>
