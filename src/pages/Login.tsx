@@ -2,6 +2,7 @@ import { useRef, useState, type FormEvent } from 'react'
 import { ArrowLeft, ArrowRight, Check, Circle, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { Button, ErrorText, Field, Input } from '../components/UI'
 import { supabase } from '../lib/supabase'
+import { enterWithRegistration } from '../lib/direct-registration'
 import { MAX_PASSWORD_LENGTH, passwordChecks, validEmail, validateRegistration } from '../lib/password-policy'
 import '../auth-brand.css'
 import '../auth-registration.css'
@@ -41,7 +42,6 @@ export function Login(){
   const [showPassword,setShowPassword]=useState(false)
   const [showConfirm,setShowConfirm]=useState(false)
   const [error,setError]=useState<string|null>(null)
-  const [message,setMessage]=useState<string|null>(null)
   const [loading,setLoading]=useState(false)
   const inFlight=useRef(false)
   const checks=passwordChecks(password)
@@ -51,12 +51,12 @@ export function Login(){
   function switchMode(){
     if(inFlight.current)return
     setSignup(value=>!value);setStep(1);setPassword('');setConfirmPassword('')
-    setShowPassword(false);setShowConfirm(false);setError(null);setMessage(null)
+    setShowPassword(false);setShowConfirm(false);setError(null)
   }
   async function submit(e:FormEvent){
     e.preventDefault()
     if(inFlight.current)return
-    setError(null);setMessage(null)
+    setError(null)
     if(signup&&step===1){
       if(!validEmail(email.trim())){setError('Informe um e-mail válido.');return}
       if(!passwordValid){setError('A senha precisa ter pelo menos 8 caracteres, letras, números e símbolos.');return}
@@ -71,25 +71,25 @@ export function Login(){
     try{
       if(!supabase)throw new Error('Conexão indisponível. Tente novamente em instantes.')
       if(signup){
-        const result=await supabase.auth.signUp({email:email.trim().toLowerCase(),password})
-        if(result.error)throw result.error
-        if(!result.data.session){
-          // Do not claim successful access when the server requires verification.
-          setMessage('O servidor ainda exige confirmação de e-mail. O cadastro não liberou uma sessão; solicite ao administrador a desativação dessa exigência.')
-          setSignup(false);setStep(1);setPassword('');setConfirmPassword('')
-          return
-        }
+        await enterWithRegistration({action:'signup',email,password,confirmPassword})
       }else{
         const result=await supabase.auth.signInWithPassword({email:email.trim().toLowerCase(),password})
-        if(result.error)throw result.error
-        if(!result.data.session)throw new Error('Não foi possível iniciar a sessão. Tente fazer login novamente.')
+        if(result.error){
+          if(result.error.code==='email_not_confirmed'||/email not confirmed/i.test(result.error.message)){
+            // Finish a previous pending registration only after server-side password verification.
+            await enterWithRegistration({action:'finish-pending',email,password})
+          }else{
+            throw result.error
+          }
+        }else if(!result.data.session){
+          throw new Error('Não foi possível iniciar a sessão. Tente fazer login novamente.')
+        }
       }
       setPassword('');setConfirmPassword('')
     }catch(cause){
       const code=(cause as {code?:string})?.code
       const detail=cause instanceof Error?cause.message:''
       setError(code==='invalid_credentials'||/invalid login credentials/i.test(detail)?'E-mail ou senha incorretos.':
-        code==='email_not_confirmed'||/email not confirmed/i.test(detail)?'Este cadastro ainda está pendente de confirmação no servidor. Solicite a liberação ao administrador.':
         cause instanceof Error?cause.message:'Não foi possível concluir. Tente novamente.')
     }finally{inFlight.current=false;setLoading(false)}
   }
@@ -136,14 +136,13 @@ export function Login(){
           </p>
         </>}
         <ErrorText message={error}/>
-        {message&&<div className="auth-info-notice" role="status">{message}</div>}
         <Button disabled={loading||(signup&&(step===1?(!validEmail(email.trim())||!passwordValid):!passwordsMatch))} type="submit">
           {signup&&step===1?<ArrowRight size={16}/>:<LockKeyhole size={16}/>}
           {loading?signup?'Criando sua conta...':'Entrando...':signup?step===1?'Continuar':'Criar conta e entrar':'Entrar no sistema'}
         </Button>
         {signup&&step===2&&<button type="button" className="auth-back" disabled={loading}
           onClick={()=>{setStep(1);setConfirmPassword('');setShowConfirm(false);setError(null)}}><ArrowLeft size={15}/> Voltar e editar</button>}
-        {signup&&<p className="auth-direct-access"><ShieldCheck size={14}/> Sua senha deve coincidir nas duas etapas.</p>}
+        {signup&&<p className="auth-direct-access"><ShieldCheck size={14}/> Ao concluir, você entra automaticamente. Sem confirmação por e-mail.</p>}
       </form>
       <div className="auth-switch">
         {signup?'Já tem uma conta?':'Ainda não tem uma conta?'}{' '}
