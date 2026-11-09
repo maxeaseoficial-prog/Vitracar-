@@ -45,7 +45,7 @@ create table public.clients (
   whatsapp text,
   birth_date date,
   photo_path text,
-  avatar_kind text not null default 'male' check(avatar_kind in ('male','female')),
+  avatar_kind text not null default 'male' check(avatar_kind in ('male','male-2','female','female-2')),
   notes text,
   created_at timestamptz not null default now(),
   unique(company_id,id)

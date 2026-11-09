@@ -216,3 +216,10 @@ a.client-card-phone svg {color:#25a244}
 .input-icon .form-input {padding-left:40px}
 @media (max-width:720px){.modal-content form.client-form{grid-template-columns:1fr}}
 
+.avatar-picker {display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin-top:8px;background:var(--vc-ink-2);border-radius:14px;padding:8px}
+.avatar-picker>button {height:30px;width:30px;border-radius:50%;border:0;background:var(--vc-ink-3);color:#fff;display:grid;place-items:center}
+.avatar-picker>button:hover {background:var(--vc-lime);color:var(--vc-ink)}
+.avatar-picker-options {display:flex;gap:10px}
+.avatar-picker-options button {padding:0;border:2px solid transparent;border-radius:50%;background:#fff;width:48px;height:48px;overflow:hidden;opacity:.55;transition:opacity .15s}
+.avatar-picker-options button.active {border-color:var(--vc-lime);opacity:1}
+.avatar-picker-options img {width:100%;height:100%;object-fit:cover;display:block}

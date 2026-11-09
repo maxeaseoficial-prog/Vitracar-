@@ -3,7 +3,7 @@ export type StatusQuote = 'draft' | 'sent' | 'approved' | 'declined' | 'cancelle
 export type StatusAppointment = 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
 export type StatusOrder = 'in_progress' | 'completed' | 'cancelled'
 export type PaymentMethod = 'pix' | 'cash' | 'credit_card' | 'debit_card' | 'other'
-export type AvatarKind = 'male' | 'female'
+export type AvatarKind = 'male' | 'male-2' | 'female' | 'female-2'
 
 export interface Company {
   id: Id
