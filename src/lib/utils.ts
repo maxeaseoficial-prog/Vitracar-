@@ -52,3 +52,15 @@ export const paymentLabel: Record<string,string> = {
   pix:'Pix', cash:'Dinheiro', credit_card:'Crédito', debit_card:'Débito', other:'Outro'
 }
 export const sum = (values: number[]) => values.reduce((a,b)=>a+b,0)
+// Telefone brasileiro: (65) 99999-9999 ou (65) 3333-4444.
+export const formatPhone = (value: string | null | undefined) => {
+  const d = (value || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '').slice(0, 11)
+  if (d.length <= 2) return d ? `(${d}` : ''
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
+}
+export const whatsappLink = (value: string | null | undefined) => {
+  const d = (value || '').replace(/\D/g, '')
+  return d.length >= 10 ? `https://wa.me/${d.length <= 11 ? '55' + d : d}` : null
+}

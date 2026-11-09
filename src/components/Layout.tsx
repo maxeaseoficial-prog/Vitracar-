@@ -63,7 +63,7 @@ export function Layout(){
         </div>
       </header>
       <main className="content-container"><Outlet/></main>
-      <footer className="app-footer"><span>VitraCar © {new Date().getFullYear()}</span><span>Gestão automotiva com elegância.</span></footer>
+      <footer className="app-footer"><span>VitraCar © {new Date().getFullYear()}</span><span>Personagens: <a href="https://www.dicebear.com/styles/personas/" target="_blank" rel="noreferrer">Personas by Draftbit</a> (CC BY 4.0)</span></footer>
     </div>
   </div>
 }
