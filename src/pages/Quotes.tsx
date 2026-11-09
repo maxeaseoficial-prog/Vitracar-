@@ -5,11 +5,11 @@ import { Modal } from '../components/Modal'
 import { Button, Empty, ErrorText, Field, Input, PageHeading, Panel, SearchInput, Select, Status, TableWrap, Textarea } from '../components/UI'
 import { downloadQuotePDF } from '../lib/pdf'
 import { useStore } from '../lib/store'
-import { date, money, priceToCents, centsToPrice, sum } from '../lib/utils'
+import { date, formatQuoteNumber, money, priceToCents, centsToPrice, sum } from '../lib/utils'
 import type { Quote, StatusQuote } from '../types'
 
 export function Quotes(){
-  const {data,company,save}=useStore()
+  const {data,company,save,createQuote}=useStore()
   const [params]=useSearchParams()
   const [search,setSearch]=useState(''),[open,setOpen]=useState(Boolean(params.get('vehicle')))
   const [clientId,setClientId]=useState(params.get('client')||'')
@@ -46,10 +46,9 @@ export function Quotes(){
         if(!Number.isInteger(item.quantity)||item.quantity<1||!Number.isFinite(priceToCents(item.price))||priceToCents(item.price)<0)
           throw new Error('Confira os valores e quantidades.')
       }
-      const quote=await save('quotes',{client_id:clientId,vehicle_id:vehicleId,status:'draft',
-        discount_cents:discountCents,notes:notes||null})
-      for(const s of active)await save('quote_items',{quote_id:quote.id,service_id:s.id,description:s.name,
-        unit_cents:priceToCents(selected[s.id].price),quantity:selected[s.id].quantity})
+      await createQuote({client_id:clientId,vehicle_id:vehicleId,discount_cents:discountCents,notes:notes||null},
+        active.map(s=>({service_id:s.id,description:s.name,
+          unit_cents:priceToCents(selected[s.id].price),quantity:selected[s.id].quantity})))
       setOpen(false)
     }catch(e){setError(e instanceof Error?e.message:String(e))}
     finally{setSaving(false)}
@@ -76,7 +75,7 @@ export function Quotes(){
           const client=data.clients.find(c=>c.id===q.client_id),v=data.vehicles.find(v=>v.id===q.vehicle_id)
           const total=Math.max(0,sum(data.quote_items.filter(i=>i.quote_id===q.id).map(i=>i.quantity*i.unit_cents))-q.discount_cents)
           return <tr key={q.id}>
-            <td><strong>#{String(q.quote_number).padStart(5,'0')}</strong></td>
+            <td><strong>{formatQuoteNumber(q.quote_number)}</strong></td>
             <td><strong>{client?.name||'—'}</strong><div className="small-note">{v?.brand} {v?.model} · {v?.plate}</div></td>
             <td>{date(q.created_at)}</td><td><strong>{money(total)}</strong></td>
             <td><select className="form-input" style={{minWidth:120,paddingTop:6,paddingBottom:6}} value={q.status}

@@ -88,7 +88,7 @@ create table public.services (
 create table public.quotes (
   id uuid primary key default gen_random_uuid(),
   company_id uuid not null references public.company_settings(id),
-  quote_number bigint generated always as identity,
+  quote_number bigint not null,
   client_id uuid not null,
   vehicle_id uuid not null,
   status text not null default 'draft' check(status in ('draft','sent','approved','declined','cancelled')),
@@ -96,6 +96,7 @@ create table public.quotes (
   notes text,
   created_at timestamptz not null default now(),
   unique(company_id,id),
+  unique(company_id,quote_number),
   foreign key(company_id,client_id) references public.clients(company_id,id),
   foreign key(company_id,vehicle_id) references public.vehicles(company_id,id)
 );
@@ -234,6 +235,19 @@ create table public.loyalty_ledger (
   foreign key(company_id,client_id) references public.clients(company_id,id)
 );
 create index ledger_client_date_idx on public.loyalty_ledger(company_id,client_id,created_at);
+-- Índices das chaves usadas por joins, triggers e políticas RLS.
+create index quote_items_quote_idx on public.quote_items(company_id,quote_id);
+create index appointment_items_appointment_idx on public.appointment_items(company_id,appointment_id);
+create index order_items_order_idx on public.service_order_items(company_id,order_id);
+create index payments_order_idx on public.payments(company_id,order_id);
+create index redemptions_client_idx on public.loyalty_redemptions(company_id,client_id);
+
+-- Numeração de orçamentos própria de cada empresa (1, 2, 3...), sem revelar
+-- o volume de outros estabelecimentos.
+create table private.company_counters (
+  company_id uuid primary key references public.company_settings(id) on delete cascade,
+  quote_seq bigint not null default 0
+);
 
 -- Isolamento por empresa: políticas não confiam em metadados editáveis do usuário.
 alter table public.company_settings enable row level security;
@@ -291,7 +305,6 @@ grant insert,update on public.clients,public.vehicles,public.services,public.quo
 public.quote_items,public.appointments,public.appointment_items,public.expenses,
 public.loyalty_rewards to authenticated;
 grant insert on public.payments to authenticated;
-grant usage,select on sequence public.quotes_quote_number_seq to authenticated;
 
 -- Onboarding segura: o primeiro usuário cria seu próprio estabelecimento.
 create function public.create_company(p_name text) returns uuid
@@ -405,6 +418,120 @@ begin
 end $$;
 revoke all on function public.redeem_loyalty(uuid,uuid) from public,anon;
 grant execute on function public.redeem_loyalty(uuid,uuid) to authenticated;
+
+-- Número sequencial por empresa, atribuído no banco (o cliente não escolhe).
+create function private.assign_quote_number() returns trigger
+language plpgsql security definer set search_path = ''
+as $$
+begin
+  insert into private.company_counters(company_id,quote_seq) values(new.company_id,1)
+  on conflict(company_id) do update set quote_seq=private.company_counters.quote_seq+1
+  returning quote_seq into new.quote_number;
+  return new;
+end $$;
+create trigger assign_quote_number before insert on public.quotes
+for each row execute function private.assign_quote_number();
+
+create function private.keep_quote_number() returns trigger
+language plpgsql set search_path = ''
+as $$
+begin
+  if new.quote_number is distinct from old.quote_number or new.company_id is distinct from old.company_id then
+    raise exception 'Número do orçamento não pode ser alterado';
+  end if;
+  return new;
+end $$;
+create trigger keep_quote_number before update on public.quotes
+for each row execute function private.keep_quote_number();
+
+-- Transições de status do agendamento: "concluído" só com ordem de serviço
+-- gerada por complete_appointment; agendamentos fechados não mudam mais.
+create function private.guard_appointment() returns trigger
+language plpgsql security definer set search_path = ''
+as $$
+begin
+  if old.status in ('completed','cancelled') then
+    raise exception 'Agendamento finalizado não pode ser alterado';
+  end if;
+  if new.client_id is distinct from old.client_id or new.vehicle_id is distinct from old.vehicle_id then
+    raise exception 'Cliente e veículo do agendamento não podem ser trocados';
+  end if;
+  if new.status='completed' and not exists(select 1 from public.service_orders where appointment_id=new.id) then
+    raise exception 'Use a conclusão do atendimento para finalizar o agendamento';
+  end if;
+  return new;
+end $$;
+create trigger guard_appointment before update on public.appointments
+for each row execute function private.guard_appointment();
+
+create function private.guard_appointment_items() returns trigger
+language plpgsql security definer set search_path = ''
+as $$
+declare s text;
+begin
+  select status into s from public.appointments
+  where id=coalesce(new.appointment_id,old.appointment_id);
+  if s in ('completed','cancelled') then
+    raise exception 'Serviços de agendamento finalizado não podem ser alterados';
+  end if;
+  return coalesce(new,old);
+end $$;
+create trigger guard_appointment_items before insert or update or delete on public.appointment_items
+for each row execute function private.guard_appointment_items();
+
+-- Orçamento e itens gravados numa única transação: ou entra tudo, ou nada.
+-- SECURITY INVOKER: as políticas RLS do usuário continuam valendo.
+create function public.create_quote(p_quote jsonb,p_items jsonb) returns uuid
+language plpgsql security invoker set search_path = ''
+as $$
+declare cid uuid:=private.current_company_id(); qid uuid; subtotal bigint; discount bigint;
+begin
+  if auth.uid() is null or cid is null then raise exception 'Não autenticado'; end if;
+  if jsonb_typeof(p_items) is distinct from 'array' or jsonb_array_length(p_items)=0 then
+    raise exception 'Selecione pelo menos um serviço';
+  end if;
+  select coalesce(sum((i->>'unit_cents')::bigint*(i->>'quantity')::integer),0) into subtotal
+  from jsonb_array_elements(p_items) i;
+  discount:=coalesce((p_quote->>'discount_cents')::bigint,0);
+  if discount<0 or discount>subtotal then raise exception 'Desconto inválido'; end if;
+  insert into public.quotes(company_id,client_id,vehicle_id,status,discount_cents,notes)
+  values(cid,(p_quote->>'client_id')::uuid,(p_quote->>'vehicle_id')::uuid,'draft',discount,nullif(p_quote->>'notes',''))
+  returning id into qid;
+  insert into public.quote_items(company_id,quote_id,service_id,description,quantity,unit_cents)
+  select cid,qid,(i->>'service_id')::uuid,i->>'description',(i->>'quantity')::integer,(i->>'unit_cents')::bigint
+  from jsonb_array_elements(p_items) i;
+  return qid;
+end $$;
+revoke all on function public.create_quote(jsonb,jsonb) from public,anon;
+grant execute on function public.create_quote(jsonb,jsonb) to authenticated;
+
+-- Agendamento e serviços numa única transação. Preço e moedas vêm do
+-- catálogo da própria empresa, não do navegador.
+create function public.create_appointment(p_appointment jsonb,p_items jsonb) returns uuid
+language plpgsql security invoker set search_path = ''
+as $$
+declare cid uuid:=private.current_company_id(); aid uuid; wanted integer; found_count integer;
+begin
+  if auth.uid() is null or cid is null then raise exception 'Não autenticado'; end if;
+  if jsonb_typeof(p_items) is distinct from 'array' or jsonb_array_length(p_items)=0 then
+    raise exception 'Selecione pelo menos um serviço';
+  end if;
+  select count(distinct (i->>'service_id')::uuid) into wanted from jsonb_array_elements(p_items) i;
+  select count(*) into found_count from public.services s
+  where s.company_id=cid and s.active and s.id in (select (i->>'service_id')::uuid from jsonb_array_elements(p_items) i);
+  if found_count<>wanted then raise exception 'Serviço inválido ou inativo'; end if;
+  insert into public.appointments(company_id,client_id,vehicle_id,quote_id,starts_at,address,notes,status)
+  values(cid,(p_appointment->>'client_id')::uuid,(p_appointment->>'vehicle_id')::uuid,
+    nullif(p_appointment->>'quote_id','')::uuid,(p_appointment->>'starts_at')::timestamptz,
+    nullif(p_appointment->>'address',''),nullif(p_appointment->>'notes',''),'scheduled')
+  returning id into aid;
+  insert into public.appointment_items(company_id,appointment_id,service_id,description,price_cents,coins)
+  select cid,aid,s.id,s.name,s.price_cents,s.coins
+  from jsonb_array_elements(p_items) i join public.services s on s.id=(i->>'service_id')::uuid and s.company_id=cid;
+  return aid;
+end $$;
+revoke all on function public.create_appointment(jsonb,jsonb) from public,anon;
+grant execute on function public.create_appointment(jsonb,jsonb) to authenticated;
 
 -- Storage: fotos privadas por estabelecimento; logomarcas públicas para PDF.
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)

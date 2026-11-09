@@ -11,7 +11,7 @@ const localKey=(v:string)=>{const d=new Date(v);return `${d.getFullYear()}-${Str
 const dayKey=(year:number,month:number,day:number)=>`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
 
 export function Agenda(){
-  const {data,save,completeAppointment}=useStore()
+  const {data,save,createAppointment,completeAppointment}=useStore()
   const [params]=useSearchParams()
   const [month,setMonth]=useState(new Date(new Date().getFullYear(),new Date().getMonth(),1))
   const [selected,setSelected]=useState(localKey(new Date().toISOString()))
@@ -55,10 +55,9 @@ export function Agenda(){
         if(editing.status==='completed'||editing.status==='cancelled')throw new Error('Agendamento finalizado não pode ser editado.')
         await save('appointments',{starts_at:when.toISOString(),address:address||null,notes:notes||null},editing.id)
       }else{
-        const a=await save('appointments',{client_id:clientId,vehicle_id:vehicleId,
-          starts_at:when.toISOString(),address:address||null,notes:notes||null,status:'scheduled',quote_id:null})
-        for(const s of selectedServices)await save('appointment_items',{appointment_id:a.id,
-          service_id:s.id,description:s.name,price_cents:s.price_cents,coins:s.coins})
+        await createAppointment({client_id:clientId,vehicle_id:vehicleId,
+          starts_at:when.toISOString(),address:address||null,notes:notes||null,quote_id:null},
+          selectedServices.map(s=>({service_id:s.id,description:s.name,price_cents:s.price_cents,coins:s.coins})))
       }
       setSelected(localKey(when.toISOString()));setMonth(new Date(when.getFullYear(),when.getMonth(),1));setOpen(false)
     }catch(e){setError(e instanceof Error?e.message:String(e))}

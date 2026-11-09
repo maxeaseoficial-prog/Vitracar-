@@ -37,6 +37,8 @@ Sem variáveis de ambiente a aplicação abre em **modo de demonstração vazio*
 6. Execute `npm run dev`, crie seu primeiro usuário e cadastre o estabelecimento.
 7. Configure os dados comerciais na área administrativa, quando habilitada; a navegação Configurações está oculta no menu principal.
 
+Para validar o SQL sem um projeto Supabase, rode `npm run test:db`: ele cria duas empresas num Postgres em memória e testa isolamento, numeração de orçamentos, gravações atômicas, pagamentos e moedas. O CI roda esse teste a cada push.
+
 O SQL inclui tabelas, chaves estrangeiras, validações, RLS multiempresa, funções de operação e buckets. Antes do uso real, é necessária validação em banco de testes com ao menos duas empresas e auditoria de políticas. Não execute diretamente em projetos Supabase existentes com dados importantes sem revisão prévia.
 
 **Nunca coloque chaves secretas no frontend ou em commits.**
