@@ -4,17 +4,17 @@ import { Line, RoundedBox } from '@react-three/drei'
 import { paintColor } from '../../lib/catalog'
 
 type Vec2=[number,number]
-type Specs={length:number;width:number;roofY:number;roofRear:number;roofFront:number;baseRear:number;baseFront:number;wheelX:number;kind:string}
+type Specs={length:number;width:number;roofY:number;roofRear:number;roofFront:number;baseRear:number;baseFront:number;wheelX:number;kind:string;lift?:number;wheelR?:number}
 
 function specsFor(category:string):Specs {
   switch(category){
     case 'hatchback':return {length:4.1,width:1.83,roofY:1.65,roofRear:-1.28,roofFront:.73,baseRear:-1.76,baseFront:1.21,wheelX:1.32,kind:'hatch'}
     case 'coupe':
     case 'sports':return {length:4.45,width:1.91,roofY:1.47,roofRear:-1.1,roofFront:.73,baseRear:-1.66,baseFront:1.42,wheelX:1.5,kind:'sports'}
-    case 'suv':return {length:4.75,width:2.04,roofY:2,roofRear:-1.58,roofFront:.93,baseRear:-1.88,baseFront:1.45,wheelX:1.54,kind:'suv'}
-    case 'pickup':return {length:5.05,width:2.01,roofY:1.92,roofRear:-.32,roofFront:1.13,baseRear:-.62,baseFront:1.65,wheelX:1.74,kind:'pickup'}
+    case 'suv':return {length:4.75,width:2.04,roofY:2,roofRear:-1.58,roofFront:.93,baseRear:-1.88,baseFront:1.45,wheelX:1.54,kind:'suv',lift:.16,wheelR:.44}
+    case 'pickup':return {length:5.05,width:2.01,roofY:1.92,roofRear:-.32,roofFront:1.13,baseRear:-.62,baseFront:1.65,wheelX:1.74,kind:'pickup',lift:.18,wheelR:.45}
     case 'minivan':
-    case 'van':return {length:4.83,width:2.03,roofY:2.09,roofRear:-1.82,roofFront:1.04,baseRear:-2.07,baseFront:1.68,wheelX:1.53,kind:'van'}
+    case 'van':return {length:4.83,width:2.03,roofY:2.09,roofRear:-1.82,roofFront:1.04,baseRear:-2.07,baseFront:1.68,wheelX:1.53,kind:'van',lift:.08,wheelR:.40}
     case 'wagon':return {length:4.72,width:1.92,roofY:1.72,roofRear:-1.55,roofFront:.76,baseRear:-1.85,baseFront:1.44,wheelX:1.51,kind:'sedan'}
     default:return {length:4.57,width:1.89,roofY:1.65,roofRear:-1.12,roofFront:.73,baseRear:-1.71,baseFront:1.34,wheelX:1.46,kind:'sedan'}
   }
@@ -43,14 +43,16 @@ function Plate3D({plate,length}:{plate:string;length:number}){
   const texture=useMemo(()=>plateTexture(plate),[plate])
   useEffect(()=>()=>texture?.dispose(),[texture])
   if(!texture)return null
-  return <group>{[-1,1].map(side=><mesh key={side} position={[side*(length/2+.11),.7,0]}
+  // Fica à frente da grade (que vai até comprimento/2 + 0,117) para não ser encoberta.
+  return <group>{[-1,1].map(side=><mesh key={side} position={[side*(length/2+.135),.62,0]}
     rotation={[0,side*Math.PI/2,0]} renderOrder={4}>
     <planeGeometry args={[.58,.19]}/>
     <meshBasicMaterial map={texture} side={DoubleSide} toneMapped={false}/>
   </mesh>)}</group>
 }
-function Wheel({x,z}:{x:number;z:number}){
-  return <group position={[x,.38,z]}>
+function Wheel({x,z,r=.37}:{x:number;z:number;r?:number}){
+  const k=r/.37
+  return <group position={[x,r+.01,z]} scale={[k,k,1]}>
     <mesh rotation={[Math.PI/2,0,0]} castShadow>
       <cylinderGeometry args={[.37,.37,.18,24]}/>
       <meshStandardMaterial color="#161f2b" roughness={.85}/>
@@ -64,6 +66,19 @@ function Wheel({x,z}:{x:number;z:number}){
       <meshStandardMaterial color="#52657d" metalness={.5} roughness={.34}/>
     </mesh>
   </group>
+}
+// Vidro inclinado (para-brisa ou vidro traseiro) apoiado na rampa da cabine,
+// de `from` (base) até `to` (teto), afastado um pouco para fora da lataria.
+function SlopedGlass({from,to,depth,outward}:{from:Vec2;to:Vec2;depth:number;outward:1|-1}){
+  const dx=to[0]-from[0],dy=to[1]-from[1],len=Math.hypot(dx,dy)
+  if(len<.05)return null
+  const normal:Vec2=outward===1?[dy/len,-dx/len]:[-dy/len,dx/len]
+  const off=.045
+  return <mesh position={[(from[0]+to[0])/2+normal[0]*off,(from[1]+to[1])/2+normal[1]*off,0]}
+    rotation={[0,0,Math.atan2(dy,dx)]}>
+    <boxGeometry args={[len*.9,.012,depth*.86]}/>
+    <meshStandardMaterial color="#1f3c56" metalness={.3} roughness={.18}/>
+  </mesh>
 }
 export function QuickCarModel({category,color,plate}:{category:string;color:string;plate:string}){
   const spec=useMemo(()=>specsFor(category),[category])
@@ -82,7 +97,18 @@ export function QuickCarModel({category,color,plate}:{category:string;color:stri
     ]
   },[spec,middle])
   const cabinDepth=spec.width*.79
+  const lift=spec.lift||0
+  const wheelR=spec.wheelR||.37
   return <group>
+    {([-1,1] as const).map(side=><group key={'w'+side}>
+      <Wheel x={spec.wheelX} z={side*(spec.width/2+.04)} r={wheelR}/>
+      <Wheel x={-spec.wheelX} z={side*(spec.width/2+.04)} r={wheelR}/>
+    </group>)}
+    <group position={[0,lift,0]}>
+    <SlopedGlass from={[spec.baseFront,1]} to={[spec.roofFront,spec.roofY-.12]} depth={cabinDepth} outward={1}/>
+    <SlopedGlass from={[spec.baseRear,1]} to={[spec.roofRear,spec.roofY-.07]} depth={cabinDepth} outward={-1}/>
+    {(spec.kind==='suv'||spec.kind==='pickup')&&<RoundedBox args={[spec.length*.98,.16,spec.width+.02]} radius={.05} smoothness={2}
+      position={[0,.44,0]}><meshStandardMaterial color="#2a3442" roughness={.8}/></RoundedBox>}
     <RoundedBox args={[spec.length,.65,spec.width]} radius={.12} smoothness={3}
       position={[0,.7,0]} castShadow receiveShadow>
       <meshPhysicalMaterial color={hex} metalness={.14} roughness={.31} clearcoat={.76} clearcoatRoughness={.22}/>
@@ -110,8 +136,6 @@ export function QuickCarModel({category,color,plate}:{category:string;color:stri
         position={[-spec.length/2-.028,.85,side*(spec.width*.33)]}>
         <meshStandardMaterial color="#ef4354" emissive="#8d101b" emissiveIntensity={.3}/>
       </RoundedBox>
-      <Wheel x={spec.wheelX} z={side*(spec.width/2+.04)}/>
-      <Wheel x={-spec.wheelX} z={side*(spec.width/2+.04)}/>
     </group>)}
     <RoundedBox args={[.10,.22,spec.width*.53]} radius={.055} smoothness={2}
       position={[spec.length/2+.067,.76,0]}>
@@ -136,5 +160,6 @@ export function QuickCarModel({category,color,plate}:{category:string;color:stri
       <meshStandardMaterial color="#6f8095" metalness={.52} roughness={.37}/>
     </RoundedBox>)}
     <Plate3D plate={plate} length={spec.length}/>
+    </group>
   </group>
 }

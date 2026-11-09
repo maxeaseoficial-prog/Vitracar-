@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ContactShadows, OrbitControls } from '@react-three/drei'
 import { AlertCircle, RotateCcw } from 'lucide-react'
@@ -10,6 +10,17 @@ type Props={category:string;color:string;plate:string;variant?:'standard'|'studi
 export function QuickCarViewer({category,color,plate,variant='studio'}:Props){
   const [auto,setAuto]=useState(true)
   const [resetKey,setResetKey]=useState(0)
+  const frame=useRef<HTMLDivElement>(null)
+  // Fora da tela, nada é desenhado; parado (sem giro), só redesenha quando o
+  // usuário mexe na câmera. Economiza GPU e bateria no celular.
+  const [visible,setVisible]=useState(true)
+  useEffect(()=>{
+    const el=frame.current
+    if(!el||typeof IntersectionObserver==='undefined')return
+    const io=new IntersectionObserver(([entry])=>setVisible(entry.isIntersecting))
+    io.observe(el)
+    return()=>io.disconnect()
+  },[])
   const [webgl]=useState(()=>{
     try{
       const el=document.createElement('canvas')
@@ -17,17 +28,17 @@ export function QuickCarViewer({category,color,plate,variant='studio'}:Props){
     }catch{return false}
   })
   const plateLabel=normalizePlate(plate).slice(0,7)||'ABC1D23'
-  return <div className={`viewer-frame viewer-quick ${variant==='studio'?'viewer-studio-mode':''}`}>
+  return <div ref={frame} className={`viewer-frame viewer-quick ${variant==='studio'?'viewer-studio-mode':''}`}>
     <div className="viewer-topline"><span className="viewer-live-dot"/>
       SHOWROOM 3D LEVE <span className="viewer-tag">360°</span>
     </div>
     <div className="viewer-shell">
       {webgl?
-        <Canvas key={resetKey} camera={{position:[6.2,3.2,5.8],fov:37,near:.1,far:100}}
+        <Canvas key={resetKey} frameloop={!visible?'never':auto?'always':'demand'} camera={{position:[6.2,3.2,5.8],fov:37,near:.1,far:100}}
           dpr={[1,1.5]} gl={{antialias:true,powerPreference:'high-performance'}}
-          onCreated={({gl})=>{gl.toneMappingExposure=1.25}}>
+          onCreated={({gl})=>{gl.toneMappingExposure=1.05}}>
           <color attach="background" args={['#f7fbff']}/>
-          <ambientLight intensity={2.25}/>
+          <ambientLight intensity={1.6}/>
           <hemisphereLight args={['#ffffff','#d0dfed',2.2]}/>
           <directionalLight position={[6,10,5]} intensity={3} castShadow/>
           <directionalLight position={[-4,5,-6]} intensity={1.4}/>

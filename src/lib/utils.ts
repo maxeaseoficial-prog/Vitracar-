@@ -2,9 +2,32 @@ export const money = (cents: number) => new Intl.NumberFormat('pt-BR', { style: 
 export const number = (value: number) => new Intl.NumberFormat('pt-BR').format(value || 0)
 export const date = (value: string | null | undefined) => value ? new Date(value).toLocaleDateString('pt-BR') : '—'
 export const dateTime = (value: string | null | undefined) => value ? new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '—'
-export const isoToday = () => new Date().toISOString().slice(0, 10)
-export const priceToCents = (value: string | number) => Math.round(Number(String(value).replace(',', '.')) * 100)
-export const centsToPrice = (value: number) => (value / 100).toFixed(2)
+// Data de hoje no fuso do navegador (toISOString usaria UTC e, depois das 21h
+// no horário de Brasília, devolveria o dia seguinte).
+export const isoToday = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+// Aceita o formato brasileiro ("1.500,00", "R$ 1.500", "150,5") e o formato com
+// ponto decimal ("1500.50"). Devolve NaN quando o texto não é um valor.
+export const priceToCents = (value: string | number) => {
+  if (typeof value === 'number') return Math.round(value * 100)
+  let s = value.replace(/R\$/gi, '').replace(/\s/g, '')
+  if (!/^-?[\d.,]+$/.test(s)) return NaN
+  if (s.includes(',')) {
+    if (s.indexOf(',') !== s.lastIndexOf(',')) return NaN
+    if (s.includes('.') && !/^-?\d{1,3}(\.\d{3})+,/.test(s)) return NaN
+    s = s.replace(/\./g, '').replace(',', '.')
+  } else if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) {
+    s = s.replace(/\./g, '')
+  } else if ((s.match(/\./g) || []).length > 1) {
+    return NaN
+  }
+  const n = Number(s)
+  return Number.isFinite(n) ? Math.round(n * 100) : NaN
+}
+export const formatQuoteNumber = (n: number | null | undefined) => n ? '#' + String(n).padStart(5, '0') : '—'
+export const centsToPrice = (value: number) => (value / 100).toFixed(2).replace('.', ',')
 export const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map(x => x[0]?.toUpperCase()).join('')
 export const normalizePlate = (input: string) => input.toUpperCase().replace(/[^A-Z0-9]/g, '')
 export const validPlate = (plate: string) => /^[A-Z]{3}(?:[0-9]{4}|[0-9][A-Z][0-9]{2})$/.test(normalizePlate(plate))

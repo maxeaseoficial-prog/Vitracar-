@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { CalendarDays, CarFront, ChevronRight, CircleDollarSign, Coins, FileText,
-  LayoutDashboard, Menu, Wrench, X } from 'lucide-react'
+  LayoutDashboard, LogOut, Menu, Settings2, Wrench, X } from 'lucide-react'
 import { useStore } from '../lib/store'
+import { supabase } from '../lib/supabase'
 import { date } from '../lib/utils'
 
 const menus=[
@@ -18,7 +19,15 @@ export function Layout(){
   const {company,profile,isDemo}=useStore()
   const [open,setOpen]=useState(false)
   const {pathname}=useLocation()
-  const current=menus.find(m=>m.to===pathname)||menus[0]
+  const navigate=useNavigate()
+  const current=pathname==='/configuracoes'?{label:'Configurações'}:menus.find(m=>m.to===pathname)||menus[0]
+  const [leaving,setLeaving]=useState(false)
+  async function logout(){
+    if(!supabase||leaving)return
+    setLeaving(true)
+    const {error}=await supabase.auth.signOut()
+    if(error){setLeaving(false);window.alert(error.message)}
+  }
   return <div className="app-shell">
     {open&&<div className="mobile-overlay" onClick={()=>setOpen(false)}/>}
     <aside className={`sidebar ${open?'sidebar-open':''}`}>
@@ -31,7 +40,7 @@ export function Layout(){
       <nav className="sidebar-nav" aria-label="Menu principal">
         {menus.map(m=><NavLink to={m.to} key={m.to} onClick={()=>setOpen(false)}
           end={m.to==='/'} className={({isActive})=>`nav-item ${isActive?'active':''}`}>
-          <m.icon size={18} strokeWidth={1.85}/><span>{m.label}</span>{m.to===current.to&&<ChevronRight className="nav-arrow" size={15}/>}
+          <m.icon size={18} strokeWidth={1.85}/><span>{m.label}</span>{m.label===current.label&&<ChevronRight className="nav-arrow" size={15}/>}
         </NavLink>)}
       </nav>
       {!isDemo&&<div className="sidebar-bottom">
@@ -47,6 +56,10 @@ export function Layout(){
           <span className="today-top">{date(new Date().toISOString())}</span>
           <div className="top-separator"/>
           <div className="company-badge"><span className="company-initial">{company.name[0]||'V'}</span><span>{company.name}</span></div>
+          {profile.role==='admin'&&<button className="icon-button" onClick={()=>navigate('/configuracoes')}
+            aria-label="Configurações" title="Configurações"><Settings2 size={18}/></button>}
+          {!isDemo&&<button className="icon-button" onClick={()=>void logout()} disabled={leaving}
+            aria-label="Sair da conta" title="Sair da conta"><LogOut size={18}/></button>}
         </div>
       </header>
       <main className="content-container"><Outlet/></main>

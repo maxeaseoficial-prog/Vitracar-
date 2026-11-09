@@ -8,7 +8,7 @@ import { QuickCarViewer } from '../components/vehicle/QuickCarViewer'
 import { categories } from '../lib/catalog'
 import { VehicleStudioForm } from '../components/vehicle/VehicleStudioForm'
 import { useStore } from '../lib/store'
-import { date, dateTime, escapeSearch, formatPlate, money, number, sum } from '../lib/utils'
+import { date, dateTime, escapeSearch, formatQuoteNumber, formatPlate, money, number, sum } from '../lib/utils'
 import type { Client } from '../types'
 
 function ClientForm({client,onDone,onClose}:{client?:Client;onDone:()=>void;onClose:()=>void}){
@@ -134,7 +134,7 @@ export function ClientProfile(){
       <Panel title="Orçamentos anteriores">
         {quotes.length?quotes.map(q=><div key={q.id} className="list-item-row">
           <div className="list-icon"><FilePlus2 size={17}/></div>
-          <div><div className="list-item-title">Orçamento #{q.quote_number}</div><div className="list-item-subtitle">{date(q.created_at)}</div></div>
+          <div><div className="list-item-title">Orçamento {formatQuoteNumber(q.quote_number)}</div><div className="list-item-subtitle">{date(q.created_at)}</div></div>
           <div className="list-item-right"><Status status={q.status}/></div></div>):<Empty title="Nenhum orçamento registrado"/>}
       </Panel>
     </div>

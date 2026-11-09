@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { Component, Suspense, lazy, useCallback, useEffect, useState, type ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import type { User } from '@supabase/supabase-js'
 import type { Profile } from './types'
@@ -8,33 +8,53 @@ import { isConfigured, supabase } from './lib/supabase'
 import { demoCompany, demoProfile } from './lib/demo'
 import { DataProvider, useStore } from './lib/store'
 import { Login, Onboarding } from './pages/Login'
-import { Dashboard } from './pages/Dashboard'
-import { Clients, ClientProfile, VehicleDetail } from './pages/Clients'
-import { Services } from './pages/Services'
-import { Quotes } from './pages/Quotes'
-import { Agenda } from './pages/Agenda'
-import { Finance } from './pages/Finance'
-import { Loyalty } from './pages/Loyalty'
-import { Settings } from './pages/Settings'
+
+// Cada página é baixada só quando aberta: o 3D (Three.js) e o PDF (jsPDF)
+// deixam de pesar na primeira carga.
+const Dashboard=lazy(()=>import('./pages/Dashboard').then(m=>({default:m.Dashboard})))
+const Clients=lazy(()=>import('./pages/Clients').then(m=>({default:m.Clients})))
+const ClientProfile=lazy(()=>import('./pages/Clients').then(m=>({default:m.ClientProfile})))
+const VehicleDetail=lazy(()=>import('./pages/Clients').then(m=>({default:m.VehicleDetail})))
+const Services=lazy(()=>import('./pages/Services').then(m=>({default:m.Services})))
+const Quotes=lazy(()=>import('./pages/Quotes').then(m=>({default:m.Quotes})))
+const Agenda=lazy(()=>import('./pages/Agenda').then(m=>({default:m.Agenda})))
+const Finance=lazy(()=>import('./pages/Finance').then(m=>({default:m.Finance})))
+const Loyalty=lazy(()=>import('./pages/Loyalty').then(m=>({default:m.Loyalty})))
+const Settings=lazy(()=>import('./pages/Settings').then(m=>({default:m.Settings})))
+
+// Última barreira: um erro inesperado mostra uma mensagem em vez de tela branca.
+class AppErrorBoundary extends Component<{children:ReactNode},{error:Error|null}>{
+  state={error:null as Error|null}
+  static getDerivedStateFromError(error:Error){return {error}}
+  render(){
+    if(!this.state.error)return this.props.children
+    return <div style={{maxWidth:600,margin:'10vh auto',padding:20}}>
+      <h2>Algo deu errado nesta tela</h2>
+      <p className="muted">{this.state.error.message}</p>
+      <button className="btn btn-primary" onClick={()=>{this.setState({error:null});window.location.assign('/')}}>Voltar ao início</button>
+    </div>
+  }
+}
+const page=(node:ReactNode)=><Suspense fallback={<Loading label="Abrindo..."/>}>{node}</Suspense>
 
 function InnerRoutes(){
-  const {loading,error,refresh}=useStore()
+  const {loading,error,refresh,profile}=useStore()
   if(loading)return <div className="app-shell"><div style={{margin:'auto'}}><Loading label="Carregando sua VitraCar..."/></div></div>
   if(error)return <div style={{maxWidth:600,margin:'10vh auto',padding:20}}>
     <h2>Não foi possível carregar os dados</h2><p className="muted">{error}</p>
     <button className="btn btn-primary" onClick={()=>void refresh()}>Tentar novamente</button>
   </div>
   return <Routes><Route element={<Layout/>}>
-    <Route index element={<Dashboard/>}/>
-    <Route path="/clientes" element={<Clients/>}/>
-    <Route path="/clientes/:id" element={<ClientProfile/>}/>
-    <Route path="/veiculos/:id" element={<VehicleDetail/>}/>
-    <Route path="/servicos" element={<Services/>}/>
-    <Route path="/orcamentos" element={<Quotes/>}/>
-    <Route path="/agenda" element={<Agenda/>}/>
-    <Route path="/financeiro" element={<Finance/>}/>
-    <Route path="/fidelidade" element={<Loyalty/>}/>
-    <Route path="/configuracoes" element={<Settings/>}/>
+    <Route index element={page(<Dashboard/>)}/>
+    <Route path="/clientes" element={page(<Clients/>)}/>
+    <Route path="/clientes/:id" element={page(<ClientProfile/>)}/>
+    <Route path="/veiculos/:id" element={page(<VehicleDetail/>)}/>
+    <Route path="/servicos" element={page(<Services/>)}/>
+    <Route path="/orcamentos" element={page(<Quotes/>)}/>
+    <Route path="/agenda" element={page(<Agenda/>)}/>
+    <Route path="/financeiro" element={page(<Finance/>)}/>
+    <Route path="/fidelidade" element={page(<Loyalty/>)}/>
+    <Route path="/configuracoes" element={profile.role==='admin'?page(<Settings/>):<Navigate to="/" replace/>}/>
     <Route path="*" element={<Navigate to="/" replace/>}/>
   </Route></Routes>
 }
@@ -73,6 +93,7 @@ function LiveApp(){
   return <DataProvider key={profile.company_id} companyId={profile.company_id} profile={profile} demo={false}><InnerRoutes/></DataProvider>
 }
 export function App(){
-  if(!isConfigured)return <DataProvider companyId={demoCompany.id} profile={demoProfile} demo={true}><InnerRoutes/></DataProvider>
-  return <LiveApp/>
+  return <AppErrorBoundary>{!isConfigured
+    ?<DataProvider companyId={demoCompany.id} profile={demoProfile} demo={true}><InnerRoutes/></DataProvider>
+    :<LiveApp/>}</AppErrorBoundary>
 }

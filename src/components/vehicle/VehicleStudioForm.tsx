@@ -142,6 +142,9 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
             selectedCar?`${selectedCar.brand} ${selectedCar.model}`:'Selecione um veículo'}</strong>
           {(selectedCar||manual)&&<small>{categories[selectedCar?.category||category]||'Veículo'} ·
             {viewMode==='quick'?' Prévia 3D ilustrativa por categoria':' Modelo 3D original (experimental)'}</small>}
+          {selectedCar&&!manual&&<small className="v-credit-line">Foto e modelo original: {selectedCar.credit.sourceUrl?
+            <a href={selectedCar.credit.sourceUrl} target="_blank" rel="noreferrer">{selectedCar.credit.author}</a>:selectedCar.credit.author}
+            {' · '}{selectedCar.credit.license}</small>}
         </div><span className="v-preview-live"><span/> AO VIVO</span></div>
 
         {(selectedCar||manual)&&<div className="v-mode-switch" role="group" aria-label="Modo de visualização do veículo">

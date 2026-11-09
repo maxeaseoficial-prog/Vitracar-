@@ -1,11 +1,13 @@
+// Catálogo externo fixado num commit: mudanças no repositório de origem
+// não alteram a VitraCar sem uma atualização deliberada desta versão.
 export type CatalogCar = {
   id:string; brand:string; model:string; years:[number,number]; category:string; file:string; bytes:number
   paint:null | { materials:string[]; textured:boolean; confidence:string }
   credit: { author:string; authorUrl:string|null; sourceName:string|null; sourceUrl:string|null; license:string }
 }
 type Manifest = { count:number; cars:CatalogCar[] }
-const manifestUrl = import.meta.env.VITE_CAR_MANIFEST_URL || 'https://raw.githubusercontent.com/pedrosoandre/carros/main/cars.json'
-const assetsUrl = (import.meta.env.VITE_CAR_ASSET_BASE_URL || 'https://cdn.jsdelivr.net/gh/pedrosoandre/carros@main/assets').replace(/\/$/, '')
+const manifestUrl = import.meta.env.VITE_CAR_MANIFEST_URL || 'https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/cars.json'
+const assetsUrl = (import.meta.env.VITE_CAR_ASSET_BASE_URL || 'https://cdn.jsdelivr.net/gh/pedrosoandre/carros@2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets').replace(/\/$/, '')
 let cache: Promise<CatalogCar[]> | undefined
 export const getCatalog = () => {
   cache ??= fetch(manifestUrl).then(async r => {
