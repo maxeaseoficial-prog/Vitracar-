@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, CalendarPlus, Camera, CarFront, FilePlus2, History, MessageCircle, Pencil, Phone, Plus, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarPlus, Camera, ChevronLeft, ChevronRight, CarFront, FilePlus2, History, MessageCircle, Pencil, Phone, Plus, X } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Avatar, Button, CoinCount, Empty, ErrorText, Field, Input, PageHeading, Panel, SearchInput, Select, Status, TableWrap, Textarea } from '../components/UI'
 import { CarViewer } from '../components/CarViewer'
@@ -8,7 +8,7 @@ import { QuickCarViewer } from '../components/vehicle/QuickCarViewer'
 import { categories } from '../lib/catalog'
 import { VehicleStudioForm } from '../components/vehicle/VehicleStudioForm'
 import { useStore } from '../lib/store'
-import { avatarUri } from '../lib/avatar'
+import { AVATAR_OPTIONS, avatarUri, genderOf } from '../lib/avatar'
 import { date, dateTime, escapeSearch, formatPhone, formatQuoteNumber, whatsappLink, formatPlate, money, number, sum } from '../lib/utils'
 import type { AvatarKind, Client } from '../types'
 
@@ -36,7 +36,9 @@ function ClientForm({client,onDone,onClose}:{client?:Client;onDone:()=>void;onCl
     }catch(e){setError(e instanceof Error?e.message:String(e))}
     finally{setBusy(false)}
   }
-  const preview=photoUrl||avatarUri(name,avatar)
+  const preview=photoUrl||avatarUri(avatar)
+  const gender=genderOf(avatar),options=AVATAR_OPTIONS[gender],index=Math.max(0,options.indexOf(avatar))
+  const step=(d:number)=>setAvatar(options[(index+d+options.length)%options.length])
   return <form onSubmit={submit} className="client-form">
     <aside className="client-preview">
       <div className="client-preview-photo"><img src={preview} alt="Prévia do cliente"/>
@@ -44,10 +46,16 @@ function ClientForm({client,onDone,onClose}:{client?:Client;onDone:()=>void;onCl
       </div>
       <strong>{name.trim()||'Novo cliente'}</strong>
       <span>{whatsapp||'WhatsApp não informado'}</span>
-      <div className="kind-switch" role="radiogroup" aria-label="Personagem do cliente">
-        {(['male','female'] as const).map(kind=><button type="button" key={kind} role="radio" aria-checked={avatar===kind}
-          className={avatar===kind?'active':''} onClick={()=>setAvatar(kind)}>
-          <img src={avatarUri(name,kind)} alt=""/>{kind==='male'?'Masculino':'Feminino'}</button>)}
+      <div className="kind-switch" role="radiogroup" aria-label="Gênero do personagem">
+        {(['male','female'] as const).map(g=><button type="button" key={g} role="radio" aria-checked={gender===g}
+          className={gender===g?'active':''} onClick={()=>{if(gender!==g)setAvatar(AVATAR_OPTIONS[g][0])}}>
+          <img src={avatarUri(AVATAR_OPTIONS[g][g===gender?index:0])} alt=""/>{g==='male'?'Masculino':'Feminino'}</button>)}
+      </div>
+      <div className="avatar-picker" aria-label="Escolha do personagem">
+        <button type="button" onClick={()=>step(-1)} aria-label="Personagem anterior"><ChevronLeft size={16}/></button>
+        <div className="avatar-picker-options">{options.map((k,i)=><button type="button" key={k} onClick={()=>setAvatar(k)}
+          className={i===index?'active':''} aria-label={`Personagem ${i+1}`} aria-pressed={i===index}><img src={avatarUri(k)} alt=""/></button>)}</div>
+        <button type="button" onClick={()=>step(1)} aria-label="Próximo personagem"><ChevronRight size={16}/></button>
       </div>
       <label className={`photo-drop ${isDemo?'disabled':''}`}>
         <Camera size={17}/><span><strong>{photo?'Trocar foto':'Enviar foto'}</strong>

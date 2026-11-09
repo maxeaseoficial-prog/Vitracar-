@@ -3,7 +3,7 @@ import { ArrowRight, LoaderCircle, Search, Coins, Inbox } from 'lucide-react'
 import type { Client } from '../types'
 import { supabase } from '../lib/supabase'
 import { statusLabel } from '../lib/utils'
-import { avatarUri } from '../lib/avatar'
+import { avatarUri, genderOf } from '../lib/avatar'
 
 export function Button({variant='primary',size='normal',className='',children,...props}:ButtonHTMLAttributes<HTMLButtonElement>&{
   variant?:'primary'|'secondary'|'ghost'|'danger';size?:'normal'|'small';children:ReactNode
@@ -69,7 +69,7 @@ export function Avatar({client,size='medium'}:{client:Pick<Client,'id'|'name'|'a
     })
     return()=>{active=false}
   },[client.photo_path])
-  return <div className={`avatar avatar-${size} ${client.avatar_kind==='female'?'avatar-female':'avatar-male'}`} title={client.name}>
-    <img src={url||avatarUri(client.name,client.avatar_kind)} alt={url?`Foto de ${client.name}`:`Personagem de ${client.name}`}/>
+  return <div className={`avatar avatar-${size} ${genderOf(client.avatar_kind)==='female'?'avatar-female':'avatar-male'}`} title={client.name}>
+    <img src={url||avatarUri(client.avatar_kind)} alt={url?`Foto de ${client.name}`:`Personagem de ${client.name}`}/>
   </div>
 }
