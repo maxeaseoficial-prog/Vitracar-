@@ -1,0 +1,29 @@
+/* Cadastro em duas etapas. Mantém a identidade azul e a logo oficial. */
+.auth-steps{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0;margin:0 0 24px;list-style:none}
+.auth-steps li{display:flex;align-items:center;gap:8px;color:#8a96a8;font-size:11px;font-weight:700;line-height:1.4}
+.auth-steps li>span{width:27px;height:27px;border-radius:50%;background:#f0f2f6;color:#8390a2;display:grid;place-items:center;flex-shrink:0}
+.auth-steps li.current{color:#0131cd}
+.auth-steps li.current>span{background:#0131cd;color:#fff;box-shadow:0 0 0 4px #0131cd0c}
+.auth-steps li.complete{color:#2453ac}
+.auth-steps li.complete>span{background:#eef2ff;color:#0131cd}
+.auth-password-wrap{position:relative;width:100%}
+.auth-password-wrap .form-input{padding-right:46px}
+.auth-password-toggle{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:36px;height:34px;background:transparent;border:0;color:#718095;border-radius:8px}
+.auth-password-toggle:hover{background:#f0f3fb;color:#0131cd}
+.auth-password-rules{margin:-5px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;list-style:none}
+.auth-password-rules li{display:flex;align-items:center;gap:7px;font-size:10px;line-height:1.5;color:#78879b}
+.auth-password-rules li svg{flex-shrink:0}
+.auth-password-rules li.met{color:#0b7a4b}
+.auth-password-match{margin:-6px 0 0!important;font-size:11px;color:#7b8a9e;line-height:1.5}
+.auth-password-match.match{color:#0b7a4b}.auth-password-match.mismatch{color:#b33440}
+.auth-password-wrap input[aria-invalid=true]{border-color:#d0636b}
+.auth-account-summary{display:flex;align-items:center;gap:12px;background:#f2f5ff;border:1px solid #e4eafa;border-radius:12px;padding:13px;color:#0131cd}
+.auth-account-summary div{min-width:0}
+.auth-account-summary small{display:block;color:#78879a;font-size:10px;margin-bottom:5px}
+.auth-account-summary strong{display:block;font-size:12px;color:#253248;overflow-wrap:anywhere}
+.auth-back{display:flex;justify-content:center;align-items:center;gap:7px;border:0;background:transparent;font-size:11px;font-weight:700;color:#50627a;padding:7px}
+.auth-back:hover{color:#0131cd}
+.auth-direct-access{display:flex;align-items:center;justify-content:center;gap:6px;color:#6c7a8c;font-size:10px;line-height:1.5;margin:0;text-align:center}
+@media(max-width:400px){.auth-steps{gap:7px}.auth-steps li{font-size:10px}.auth-password-rules{grid-template-columns:1fr}}
+
+.auth-info-notice{background:#fff8e8;border:1px solid #f1dfb6;border-radius:11px;padding:13px;color:#806024;font-size:11px;line-height:1.65}
