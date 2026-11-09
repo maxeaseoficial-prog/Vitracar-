@@ -545,6 +545,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    29,
+    29,
+    29
+   ],
+   "share": 0.53
+  },
   "paintShare": 0.995,
   "check": {
    "frame": 0.235,
@@ -1587,6 +1598,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0.06,
   "check": {
    "frame": 0.326,
@@ -1948,6 +1960,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0.013,
   "check": {
    "frame": 0.366,
@@ -2683,6 +2696,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0,
   "check": {
    "frame": 0.362,
@@ -5507,6 +5521,7 @@
    3,
    4
   ],
+  "tint": null,
   "paintShare": 0.991,
   "check": {
    "frame": 0.372,
@@ -5708,6 +5723,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.995,
   "check": {
    "frame": 0.376,
@@ -5938,6 +5954,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0.19,
   "check": {
    "frame": 0.321,
@@ -6325,6 +6342,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.999,
   "check": {
    "frame": 0.405,
@@ -6369,6 +6387,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.999,
   "check": {
    "frame": 0.354,
@@ -6411,6 +6430,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0,
   "check": {
    "frame": 0.311,
@@ -6609,6 +6629,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.995,
   "check": {
    "frame": 0.383,
@@ -7335,6 +7356,17 @@
    2,
    1
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    6,
+    6,
+    7
+   ],
+   "share": 0.506
+  },
   "paintShare": 0.992,
   "check": {
    "frame": 0.412,
@@ -8140,6 +8172,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    1,
+    1,
+    1
+   ],
+   "share": 0.496
+  },
   "paintShare": 0.999,
   "check": {
    "frame": 0.379,
@@ -8433,6 +8476,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0,
   "check": {
    "frame": 0.324,
@@ -9340,6 +9384,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.997,
   "check": {
    "frame": 0.395,
@@ -9599,6 +9644,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.998,
   "check": {
    "frame": 0.416,
@@ -12338,6 +12384,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0,
   "check": {
    "frame": 0.222,
@@ -12732,6 +12779,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.986,
   "check": {
    "frame": 0.33,
@@ -12873,6 +12921,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    1,
+    1,
+    1
+   ],
+   "share": 0.582
+  },
   "paintShare": 0.996,
   "check": {
    "frame": 0.224,
@@ -14698,6 +14757,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0,
   "check": {
    "frame": 0.351,
@@ -14740,6 +14800,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0,
   "check": {
    "frame": 0.351,
@@ -14966,6 +15027,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.997,
   "check": {
    "frame": 0.403,
@@ -15322,6 +15384,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.991,
   "check": {
    "frame": 0.316,
@@ -15457,6 +15520,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 1,
   "check": {
    "frame": 0.375,
@@ -15818,6 +15882,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0.028,
   "check": {
    "frame": 0.452,
@@ -17252,6 +17317,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    10,
+    10,
+    10
+   ],
+   "share": 0.596
+  },
   "paintShare": 0.993,
   "check": {
    "frame": 0.37,
@@ -17545,6 +17621,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.995,
   "check": {
    "frame": 0.361,
@@ -19730,6 +19807,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    30,
+    30,
+    30
+   ],
+   "share": 0.352
+  },
   "paintShare": 0.999,
   "check": {
    "frame": 0.389,
@@ -20227,6 +20315,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    138,
+    137,
+    132
+   ],
+   "share": 0.548
+  },
   "paintShare": 0.998,
   "check": {
    "frame": 0.313,
@@ -20648,6 +20747,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    3,
+    4,
+    9
+   ],
+   "share": 0.238
+  },
   "paintShare": 0.999,
   "check": {
    "frame": 0.452,
@@ -21673,6 +21783,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.999,
   "check": {
    "frame": 0.398,
@@ -21933,6 +22044,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.993,
   "check": {
    "frame": 0.406,
@@ -22662,6 +22774,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0.14,
   "check": {
    "frame": 0.372,
@@ -25293,6 +25406,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0,
   "check": {
    "frame": 0.353,
@@ -26390,6 +26504,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.997,
   "check": {
    "frame": 0.388,
@@ -26560,6 +26675,7 @@
    1,
    0
   ],
+  "tint": null,
   "paintShare": 0.997,
   "check": {
    "frame": 0.429,
@@ -28866,6 +28982,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    29,
+    29,
+    29
+   ],
+   "share": 0.609
+  },
   "paintShare": 0.998,
   "check": {
    "frame": 0.234,
@@ -29639,6 +29766,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.998,
   "check": {
    "frame": 0.344,
@@ -30149,6 +30277,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.991,
   "check": {
    "frame": 0.33,
@@ -31706,6 +31835,7 @@
    3,
    0
   ],
+  "tint": null,
   "paintShare": 0.979,
   "check": {
    "frame": 0.438,
@@ -31913,6 +32043,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0.12,
   "check": {
    "frame": 0.362,
@@ -32541,6 +32672,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.992,
   "check": {
    "frame": 0.401,
@@ -32585,6 +32717,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.993,
   "check": {
    "frame": 0.39,
@@ -36142,6 +36275,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    0,
+    0,
+    0
+   ],
+   "share": 0.33
+  },
   "paintShare": 0.999,
   "check": {
    "frame": 0.386,
@@ -36486,6 +36630,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0.197,
   "check": {
    "frame": 0.383,
@@ -36694,6 +36839,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.995,
   "check": {
    "frame": 0.454,
@@ -36856,6 +37002,7 @@
    0,
    2
   ],
+  "tint": null,
   "paintShare": 0.999,
   "check": {
    "frame": 0.119,
@@ -37346,6 +37493,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0.104,
   "check": {
    "frame": 0.334,
@@ -40177,6 +40325,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    25,
+    22,
+    26
+   ],
+   "share": 0.258
+  },
   "paintShare": 0.996,
   "check": {
    "frame": 0.448,
@@ -40409,6 +40568,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.993,
   "check": {
    "frame": 0.548,
@@ -41342,6 +41502,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.991,
   "check": {
    "frame": 0.354,
@@ -41606,6 +41767,7 @@
    3,
    13
   ],
+  "tint": null,
   "paintShare": 0.989,
   "check": {
    "frame": 0.341,
@@ -41942,6 +42104,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    9,
+    21,
+    41
+   ],
+   "share": 0.317
+  },
   "paintShare": 0.998,
   "check": {
    "frame": 0.395,
@@ -42763,6 +42936,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.997,
   "check": {
    "frame": 0.43,
@@ -44163,6 +44337,7 @@
    21,
    24
   ],
+  "tint": null,
   "paintShare": 1,
   "check": {
    "frame": 0.338,
@@ -45933,6 +46108,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.996,
   "check": {
    "frame": 0.438,
@@ -46141,6 +46317,17 @@
    6,
    3
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    84,
+    130,
+    172
+   ],
+   "share": 0.43
+  },
   "paintShare": 0.977,
   "check": {
    "frame": 0.356,
@@ -46482,6 +46669,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0.109,
   "check": {
    "frame": 0.364,
@@ -47353,6 +47541,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0.175,
   "check": {
    "frame": 0.414,
@@ -48169,6 +48358,7 @@
   "paint": [
    0
   ],
+  "tint": null,
   "paintShare": 0.999,
   "check": {
    "frame": 0.376,
@@ -48213,6 +48403,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    53,
+    59,
+    71
+   ],
+   "share": 0.52
+  },
   "paintShare": 0.997,
   "check": {
    "frame": 0.463,
@@ -48500,6 +48701,7 @@
   },
   "photo": true,
   "paint": [],
+  "tint": null,
   "paintShare": 0,
   "check": {
    "frame": 0.39,
@@ -48921,6 +49123,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    1,
+    1,
+    0
+   ],
+   "share": 0.225
+  },
   "paintShare": 0.995,
   "check": {
    "frame": 0.343,
@@ -49030,6 +49243,17 @@
   "paint": [
    0
   ],
+  "tint": {
+   "materials": [
+    0
+   ],
+   "base": [
+    2,
+    2,
+    2
+   ],
+   "share": 0.289
+  },
   "paintShare": 0.999,
   "check": {
    "frame": 0.291,

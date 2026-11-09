@@ -5,6 +5,9 @@ export type CatalogCar = {
   // Índices (na ordem de materialOrder) dos materiais da lataria, detectados
   // pelo gerador do catálogo. Vazio: a cor original não pode ser trocada.
   paint:number[]
+  // Alternativa para arquivos de textura única: recolore só os pixels de
+  // pintura (cor base) da textura destes materiais, preservando vidros e faróis.
+  tint?:{materials:number[];base:[number,number,number]}|null
   // Foto com fundo branco gerada a partir do próprio modelo 3D.
   photo:boolean
   // Motivo pelo qual o arquivo não representa um carro completo.

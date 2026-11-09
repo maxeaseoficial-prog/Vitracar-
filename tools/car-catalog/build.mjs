@@ -31,6 +31,8 @@ const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH 
 const results = { ...previous }
 // Revisão visual das fotos: arquivos que passam nas regras automáticas mas não são um carro único e limpo.
 const MANUAL_ISSUES = JSON.parse(fs.readFileSync(path.join(root, 'tools/car-catalog/manual-issues.json'), 'utf8'))
+// Recoloração por textura só nos carros aprovados na revisão visual (nos outros mancha a pintura).
+const TINT_APPROVED = new Set(JSON.parse(fs.readFileSync(path.join(root, 'tools/car-catalog/tint-approved.json'), 'utf8')))
 let done = 0
 async function openPage() {
   const page = await browser.newPage()
@@ -53,7 +55,7 @@ async function worker() {
     const { photo, ...info } = r || {}
     if (photo) fs.writeFileSync(path.join(thumbs, car.id + '.webp'), Buffer.from(photo.split(',')[1], 'base64'))
     results[car.id] = { id: car.id, brand: car.brand, model: car.model, years: car.years, category: car.category,
-      file: car.file, bytes: car.bytes, credit: car.credit, photo: Boolean(photo), paint: info.paint || [],
+      file: car.file, bytes: car.bytes, credit: car.credit, photo: Boolean(photo), paint: info.paint || [], tint: info.tint || null,
       paintShare: info.paintShare || 0, check: { frame: info.frame, dims: info.dims, materials: info.materials, tests: info.tests, error: info.error } }
     const issue = issueOf(results[car.id])
     done++
@@ -77,7 +79,7 @@ function save() {
   for (const c of full) c.issue = (MANUAL_ISSUES[c.id] ?? issueOf(c))
   // Pintura que cobre ~100% do carro = arquivo de material único (pintaria pneus
   // e vidros junto): nesses casos a troca de cor fica desativada.
-  const cars = full.map(({ check, paintShare, ...lean }) => ({ ...lean, paint: paintShare >= 0.97 ? [] : lean.paint }))
+  const cars = full.map(({ check, paintShare, ...lean }) => ({ ...lean, paint: paintShare >= 0.97 ? [] : lean.paint, tint: lean.tint && TINT_APPROVED.has(lean.id) ? { materials: lean.tint.materials, base: lean.tint.base } : null }))
   fs.writeFileSync(outJson, JSON.stringify({ source: 'github.com/pedrosoandre/carros', generated: new Date().toISOString().slice(0, 10), cars }))
   fs.writeFileSync(path.join(root, 'tools/car-catalog/report.json'), JSON.stringify(full, null, 1))
 }
@@ -85,4 +87,4 @@ await Promise.all(Array.from({ length: jobs }, worker))
 save()
 await browser.close(); await server.close()
 const list = Object.values(results)
-console.log(`Concluído: ${list.length} carros · ${list.filter(c => !c.issue).length} válidos · ${list.filter(c => !c.issue && c.paint.length).length} com lataria pintável`)
+console.log(`Concluído: ${list.length} carros · ${list.filter(c => !c.issue).length} válidos · ${list.filter(c => !c.issue && (c.paint.length && c.paintShare < 0.97 || (c.tint && TINT_APPROVED.has(c.id)))).length} com troca de cor`)
