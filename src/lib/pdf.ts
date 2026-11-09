@@ -18,7 +18,7 @@ async function loadLogo(url: string | null): Promise<{ data: string; format: str
 export async function downloadQuotePDF(q: Quote, items: QuoteItem[], client: Client, vehicle: Vehicle, company: Company) {
   const pdf = new jsPDF({ unit: 'mm', format: 'a4' })
   const logo = await loadLogo(company.logo_url)
-  pdf.setFillColor(13, 29, 51)
+  pdf.setFillColor(1, 49, 205)
   pdf.rect(0, 0, 210, 46, 'F')
   pdf.setFont('helvetica','bold'); pdf.setFontSize(20); pdf.setTextColor('#ffffff')
   let titleX = 18
@@ -68,8 +68,8 @@ export async function downloadQuotePDF(q: Quote, items: QuoteItem[], client: Cli
   pdf.setTextColor(110,121,137);pdf.setFontSize(10)
   pdf.text('Subtotal',127,y+5);pdf.text(money(subtotal),188,y+5,{align:'right'});y+=8
   pdf.text('Desconto',127,y+5);pdf.text(money(q.discount_cents),188,y+5,{align:'right'});y+=9
-  pdf.setFillColor(234,242,255);pdf.roundedRect(118,y,74,15,3,3,'F')
-  pdf.setTextColor(19,85,173);pdf.setFont('helvetica','bold');pdf.setFontSize(12)
+  pdf.setFillColor(185,252,1);pdf.roundedRect(118,y,74,15,3,3,'F')
+  pdf.setTextColor(11,13,18);pdf.setFont('helvetica','bold');pdf.setFontSize(12)
   pdf.text('TOTAL',124,y+9.5);pdf.text(money(Math.max(0,subtotal-q.discount_cents)),188,y+9.5,{align:'right'})
   if(q.notes){
     y+=25; if(y>265){pdf.addPage();y=24}
