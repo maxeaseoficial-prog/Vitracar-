@@ -8,10 +8,10 @@ import { date } from '../lib/utils'
 
 const menus=[
   {to:'/',label:'Dashboard',icon:LayoutDashboard},
+  {to:'/agenda',label:'Agenda',icon:CalendarDays},
   {to:'/clientes',label:'Clientes e veículos',icon:CarFront},
   {to:'/servicos',label:'Serviços',icon:Wrench},
   {to:'/orcamentos',label:'Orçamentos',icon:FileText},
-  {to:'/agenda',label:'Agenda',icon:CalendarDays},
   {to:'/financeiro',label:'Financeiro',icon:CircleDollarSign},
   {to:'/fidelidade',label:'Fidelidade',icon:Coins}
 ]
