@@ -51,7 +51,7 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
   // Mostrar todos os registros de marcas e modelos: o 3D leve não depende do GLB original.
   const selectedCar=useMemo(()=>cars.find(car=>car.id===model3d)||null,[cars,model3d])
   const plateText=normalizePlate(plate)
-  const canRepaint=Boolean(selectedCar && isUsableModel(selectedCar) && selectedCar.paint.length)
+  const canRepaint=Boolean(selectedCar && isUsableModel(selectedCar) && (selectedCar.paint.length || selectedCar.tint))
   const isColorAvailable=viewMode==='quick'||!selectedCar||canRepaint
   const canSubmit=validPlate(plate) && brand.trim().length>0 && model.trim().length>0 &&
     (manual || Boolean(selectedCar) || Boolean(vehicle?.model_3d_id&&model3d===vehicle.model_3d_id))

@@ -1,9 +1,9 @@
 import { Component, Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, useGLTF } from '@react-three/drei'
-import { Box3, CanvasTexture, DoubleSide, Mesh, MeshStandardMaterial, PMREMGenerator, SRGBColorSpace, Vector3, type Material } from 'three'
+import { Box3, CanvasTexture, Color, DoubleSide, Mesh, MeshStandardMaterial, PMREMGenerator, SRGBColorSpace, Vector3, type Material } from 'three'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
-import { materialOrder } from '../lib/paint'
+import { glassMask, materialOrder, recolorTexture } from '../lib/paint'
 import { AlertCircle, Box, ExternalLink, RotateCcw } from 'lucide-react'
 import { getAssetUrl, getCatalog, getModelThumbnailUrl, isOriginalColor, modelQualityIssue, paintColor, type CatalogCar } from '../lib/catalog'
 import { normalizePlate } from '../lib/utils'
@@ -72,16 +72,17 @@ function PhysicalPlates({bounds,texture}:{bounds:Box3;texture:CanvasTexture}){
 function Model({car,color,plate,onReady}:{car:CatalogCar;color:string;plate:string;onReady:()=>void}){
   const {scene}=useGLTF(getAssetUrl(car))
   const original=isOriginalColor(color)
-  const {model,bounds,paintMaterials}=useMemo(()=>{
+  const {model,bounds,paintMaterials,masks,tinted}=useMemo(()=>{
     const model=scene.clone(true)
     model.traverse(o=>{if(o instanceof Mesh)o.castShadow=true})
     const paintMaterials:MeshStandardMaterial[]=[]
     // Só a lataria detectada pelo gerador do catálogo recebe a cor; faróis,
     // lanternas e vidros mantêm o material original. Na cor "Original" nada
     // é alterado.
-    if(!original&&car.paint.length){
+    const tinted=!car.paint.length&&car.tint?car.tint:null
+    if(!original&&(car.paint.length||tinted)){
       const order=materialOrder(model)
-      const body=new Set(car.paint.map(i=>order[i]).filter(Boolean))
+      const body=new Set((tinted?tinted.materials:car.paint).map(i=>order[i]).filter(Boolean))
       const own=new Map<Material,Material>()
       const repaint=(mat:Material):Material=>{
         if(!body.has(mat)||!(mat instanceof MeshStandardMaterial))return mat
@@ -94,11 +95,28 @@ function Model({car,color,plate,onReady}:{car:CatalogCar;color:string;plate:stri
         child.material=Array.isArray(child.material)?child.material.map(repaint):repaint(child.material)
       })
     }
-    return {model,bounds:new Box3().setFromObject(model),paintMaterials}
+    // Máscara dos vidros na textura (só para recoloração por textura).
+    const masks=new Map<MeshStandardMaterial,Uint8ClampedArray>()
+    if(tinted)for(const m of paintMaterials){
+      const img=m.map?.image as {width:number;height:number}|undefined
+      if(img?.width)masks.set(m,glassMask(model,m,img.width,img.height))
+    }
+    return {model,bounds:new Box3().setFromObject(model),paintMaterials,masks,tinted}
   },[car,scene,original])
   const texture=useMemo(()=>createMercosulTexture(plate),[plate])
+  // Texturas originais, para recolorir sempre a partir delas.
+  const sources=useMemo(()=>new Map(paintMaterials.map(m=>[m,m.map])),[paintMaterials])
   useEffect(()=>{
     const hex=paintColor(color)
+    if(tinted){
+      const made:CanvasTexture[]=[]
+      for(const material of paintMaterials){
+        const src=sources.get(material)
+        const tex=src&&recolorTexture(src,tinted.base,new Color(hex),masks.get(material))
+        if(tex){material.map=tex;material.needsUpdate=true;made.push(tex)}
+      }
+      return()=>made.forEach(t=>t.dispose())
+    }
     for(const material of paintMaterials){
       // A textura original multiplicaria a nova cor (verde e vermelho virariam quase preto).
       material.map=null
@@ -108,7 +126,7 @@ function Model({car,color,plate,onReady}:{car:CatalogCar;color:string;plate:stri
       material.opacity=1
       material.needsUpdate=true
     }
-  },[color,paintMaterials])
+  },[color,paintMaterials,tinted,sources,masks])
   useEffect(()=>{onReady()},[onReady])
   useEffect(()=>()=>{paintMaterials.forEach(m=>m.dispose())},[paintMaterials])
   useEffect(()=>()=>{texture?.dispose()},[texture])

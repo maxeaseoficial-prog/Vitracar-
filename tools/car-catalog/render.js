@@ -5,7 +5,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
-import { paintableMaterials, NON_BODY } from '../../src/lib/paint.ts'
+import { paintableMaterials, NON_BODY, dominantTextureColor, recolorTexture, glassMask } from '../../src/lib/paint.ts'
 
 const W = 640, H = 400
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
@@ -161,6 +161,36 @@ window.renderCar = async function renderCar(url) {
     const strong = singles.filter(x => x.share >= 0.03).sort((a, b) => b.share - a.share).map(x => x.i)
     for (let n = 2; n <= strong.length; n++) test(strong.slice(0, n))
   }
+  // Sem lataria separável (ou só pintaria o carro inteiro): tenta recolorir só os
+  // pixels de pintura na textura do maior material texturizado.
+  const topShare = Math.max(0, ...tests.map(t => t.share))
+  let tint = null
+  if (topShare < 0.2 || topShare >= 0.97) {
+    const textured = order.map((m, i) => i).filter(i => order[i].map && !NON_BODY.test(order[i].name || '') && order[i].opacity >= 0.9)
+      .sort((x, y) => area[y] - area[x]).slice(0, 2)
+    for (const i of textured) {
+      const mat = order[i]
+      const base = dominantTextureColor(model, mat)
+      if (!base) continue
+      const tex = recolorTexture(mat.map, base, new THREE.Color('#00b000'), glassMask(model, mat, mat.map.image.width, mat.map.image.height))
+      if (!tex) continue
+      const saved = new Map()
+      model.traverse(o => {
+        if (!o.isMesh) return
+        const mats = Array.isArray(o.material) ? o.material : [o.material]
+        if (!mats.includes(mat)) return
+        saved.set(o, o.material)
+        const c = mat.clone(); c.map = tex
+        o.material = Array.isArray(o.material) ? mats.map(m => m === mat ? c : m) : c
+      })
+      renderer.render(scene, camera)
+      const share = carPixels ? changed(testBase, pixels()) / carPixels : 0
+      if (window.__tintPreview) window.__previewImg = renderer.domElement.toDataURL('image/png')
+      saved.forEach((m, o) => { o.material = m })
+      tex.dispose()
+      if (share >= 0.2 && share <= 0.92) { tint = { materials: [i], base: base.map(v => Math.round(v)), share: Math.round(share * 1000) / 1000 }; break }
+    }
+  }
   glassSaved.forEach((m, o) => { o.material = m })
   renderer.setSize(W, H)
   // Libera a memória da GPU: sem isso, depois de algumas centenas de carros o
@@ -188,6 +218,7 @@ window.renderCar = async function renderCar(url) {
     paint: best && best.share >= 0.2 ? best.set : [],
     paintShare: best ? best.share : 0,
     tests: tests.slice(0, 4),
+    tint,
     preview: window.__previewImg
   }
 }
