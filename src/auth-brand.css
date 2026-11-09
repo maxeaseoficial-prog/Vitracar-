@@ -1,0 +1,22 @@
+/* Tela de acesso: painel azul limpo, sem elementos verdes. */
+.auth-shell .auth-brand {
+  background: var(--vc-blue, #0131cd);
+  color: #fff;
+}
+.auth-shell .auth-brand::before,
+.auth-shell .auth-brand::after {
+  content: none;
+  display: none;
+}
+.auth-shell .auth-brand .auth-logo,
+.auth-shell .auth-brand .auth-logo span,
+.auth-shell .auth-brand .auth-hero h1,
+.auth-shell .auth-brand .auth-hero h1 span,
+.auth-shell .auth-brand .auth-hero p,
+.auth-shell .auth-brand .auth-foot {
+  color: #fff;
+}
+.auth-shell .auth-brand ::selection {
+  background: #fff;
+  color: #0131cd;
+}
