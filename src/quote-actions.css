@@ -1,0 +1,6 @@
+/* Destaca apenas o botão de adicionar serviço; mantém o check selecionado. */
+.cx-quote-service:not(.is-selected) .cx-service-checkbox {
+  background: var(--cx-lime, #b9fc01);
+  border-color: var(--cx-lime, #b9fc01);
+  color: #234000;
+}
