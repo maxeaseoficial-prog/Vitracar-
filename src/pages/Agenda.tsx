@@ -110,10 +110,10 @@ export function Agenda(){
           {weeks.map((d,i)=>{
             const key=dayKey(y,m,d),visible=d>=1&&d<=count,n=filteredMonth.filter(a=>localKey(a.starts_at)===key).length
             return <button key={i} disabled={!visible} onClick={()=>setSelected(key)} style={{
-              height:70,border:'1px solid #f0f2f7',background:selected===key?'#e9f2ff':visible?'#fff':'#f8fafc',
-              borderRadius:8,color:selected===key?'#1565d8':visible?'#26394f':'#c7ced8',fontSize:12,
+              height:70,border:'1px solid #eef0f3',background:selected===key?'#0b0d12':visible?'#fff':'#f6f7f9',
+              borderRadius:8,color:selected===key?'#fff':visible?'#0b0d12':'#c7ced8',fontSize:12,
               fontWeight:800,margin:2,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:6
-            }}>{visible?d:''}{n>0&&<span style={{borderRadius:30,background:selected===key?'#1565d8':'#e5f0fe',color:selected===key?'#fff':'#286fca',padding:'3px 7px',fontSize:9}}>{n} atendimento{n>1?'s':''}</span>}</button>
+            }}>{visible?d:''}{n>0&&<span style={{borderRadius:30,background:selected===key?'#b9fc01':'#eef2ff',color:selected===key?'#0b0d12':'#0131cd',padding:'3px 7px',fontSize:9}}>{n} atendimento{n>1?'s':''}</span>}</button>
           })}
         </div></div>
       </Panel>

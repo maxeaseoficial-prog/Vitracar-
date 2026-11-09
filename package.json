@@ -12,6 +12,7 @@
     "catalog": "node tools/car-catalog/build.mjs --assets ../carros"
   },
   "dependencies": {
+    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
     "@react-three/drei": "9.121.4",
     "@react-three/fiber": "8.17.10",
     "@supabase/supabase-js": "2.47.10",

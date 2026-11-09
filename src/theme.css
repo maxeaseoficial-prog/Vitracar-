@@ -1,58 +1,156 @@
-
+/* =========================================================================
+   VitraCar — identidade visual
+   Paleta oficial: azul #0131CD · branco #FFFFFF · verde-limão #B9FC01
+   Apoio: grafite #0B0D12 (barra lateral, títulos) e cinzas neutros.
+   Esta camada vem depois de index.css e define a aparência da marca.
+   ========================================================================= */
 :root {
-  --vc-navy:#0c1730; --vc-midnight:#182744; --vc-blue:#1865d3;
-  --vc-blue-deep:#0b4b9f; --vc-ice:#f5f8fc; --vc-border:#e3eaf4;
-  --vc-text:#1b273b; --vc-muted:#7d8b9f; --vc-sky:#e3f0ff;
-  --vc-lilac:#eee6f5; --vc-mint:#e2f2e6; --vc-cream:#f8f0d9;
-  --vc-gold:#d5a53c; --blue:var(--vc-blue); --ink:var(--vc-text);
-  --muted:var(--vc-muted); --line:var(--vc-border);
-  --nav:var(--vc-navy); --surface:#fff;
+  --vc-blue:#0131cd; --vc-blue-700:#0127a6; --vc-blue-50:#eef2ff; --vc-blue-100:#dfe6ff;
+  --vc-lime:#b9fc01; --vc-lime-600:#8fc400; --vc-lime-50:#f6ffe0;
+  --vc-ink:#0b0d12; --vc-ink-2:#161a22; --vc-ink-3:#232833;
+  --vc-bg:#f3f4f6; --vc-card:#ffffff; --vc-line:#e9ebef; --vc-soft:#f6f7f9;
+  --vc-text:#0b0d12; --vc-muted:#6b7280; --vc-faint:#9ca3af;
+  --vc-radius:20px; --vc-shadow:0 1px 2px #0b0d120a,0 8px 24px #0b0d120a;
+  --blue:var(--vc-blue); --ink:var(--vc-text); --muted:var(--vc-muted); --line:var(--vc-line);
+  --nav:var(--vc-ink); --surface:#fff;
+  font-family:'Plus Jakarta Sans Variable','Plus Jakarta Sans',Inter,ui-sans-serif,system-ui,sans-serif;
 }
-body,.app-shell {background:var(--vc-ice);color:var(--vc-text)}
-.sidebar {background:linear-gradient(160deg,var(--vc-navy),#151922 88%);border-right:1px solid #303a4d}
-.brand-symbol {background:linear-gradient(150deg,#68b7ff,var(--vc-blue-deep));box-shadow:0 8px 23px #083d9170}
-.brand-wordmark span,.auth-logo span {color:#61b4fd}
-.sidebar-help {background:#1a2942;border-color:#2f405b}
-.nav-item.active {background:#24466d;color:#fff;box-shadow:inset 3px 0 #63b5ff}
-.nav-item.active svg:not(.nav-arrow) {color:#91caff}
-.topbar {border-bottom-color:var(--vc-border)}
-.page-heading h1 {color:var(--vc-text)}
-.eyebrow,.text-action {color:var(--vc-blue)}
-.btn-primary {background:var(--vc-blue);box-shadow:0 6px 18px #1261be25}
-.btn-primary:hover {background:var(--vc-blue-deep)}
-.btn-secondary {border-color:var(--vc-border)}
-.btn-secondary:hover {border-color:#a8c4e6}
-.panel,.kpi-card {border-color:var(--vc-border);box-shadow:0 5px 22px #0d285207}
-.kpi-card {border-radius:18px}
-.kpi-card:nth-child(1) {background:linear-gradient(142deg,var(--vc-sky),#f5faff 95%);border-color:#d0e4fa}
-.kpi-card:nth-child(2) {background:linear-gradient(142deg,var(--vc-mint),#f9fefa 95%);border-color:#d1e9d8}
-.kpi-card:nth-child(3) {background:linear-gradient(142deg,var(--vc-lilac),#fdfafe 95%);border-color:#e4d9f0}
-.kpi-card:nth-child(4) {background:linear-gradient(142deg,var(--vc-cream),#fffcf3 95%);border-color:#efe4c7}
-.kpi-value {color:#172438}
-.kpi-label {color:#65778e}
-.kpi-foot {color:#8694a7}
-.kpi-icon {background:#ffffffb8;color:var(--vc-blue);border:1px solid #ffffff99}
-.kpi-icon.green {background:#ffffffb8;color:#28875e}
-.kpi-icon.red {background:#ffffffb8;color:#b779a8}
-.kpi-icon.dark {background:#ffffffb8;color:#9c7b2c}
-.company-initial {background:var(--vc-sky);color:var(--vc-blue-deep)}
-.period-tab.active {color:var(--vc-blue);box-shadow:0 2px 9px #17436b10}
-.status-blue {background:#e6f0ff;color:#2669b8}
-.status-green {background:#e0f4e6;color:#258453}
-.status-amber {background:#fcf0da;color:#956d26}
-.status-red {background:#feeaea;color:#b25a63}
-.form-input:focus,.search-box:focus-within {border-color:#78aef0;box-shadow:0 0 0 3px #e3f0ff}
-.podium-card.first {background:linear-gradient(150deg,#fff5d8,#f9e9b7);border-color:#eddaab}
-.avatar-blue {border-color:#c7dcf6}
-.avatar-purple {border-color:#e1d3f4}
-.viewer-shell {background:radial-gradient(ellipse at 50% 48%,#ffffff 0%,#eff5fc 90%)}
-.viewer-frame {border-color:var(--vc-border)}
-.viewer-tag {background:var(--vc-sky);color:var(--vc-blue-deep)}
-.auth-brand {background:linear-gradient(157deg,var(--vc-midnight),var(--vc-navy) 75%)}
-.auth-hero h1 span {color:#80c2ff}
-.modal-summary {background:var(--vc-sky);color:var(--vc-blue-deep)}
-.tag,.chip {background:#ecf3fb;color:#557797}
-.user-letter {background:#2a4465;color:#d8eafb}
-::selection {background:#c5dfff;color:#1d355b}
+body,.app-shell {background:var(--vc-bg);color:var(--vc-text)}
+::selection {background:var(--vc-lime);color:var(--vc-ink)}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible {outline:3px solid #0131cd55}
 
-.sidebar-bottom .user-compact {padding-top:0}
+/* ---------- Barra lateral: painel grafite flutuante ---------- */
+.sidebar {background:var(--vc-ink);border:0;margin:14px 0 14px 14px;height:calc(100vh - 28px);top:14px;border-radius:26px;color:#e5e7eb;box-shadow:0 20px 50px #0b0d1226}
+.sidebar-logo {height:96px;padding:26px 22px 18px}
+.brand-symbol {background:var(--vc-lime);color:var(--vc-ink);border-radius:14px;box-shadow:0 0 0 4px #b9fc0122}
+.brand-wordmark {font-weight:800;letter-spacing:-.6px}
+.brand-wordmark span,.auth-logo span {color:var(--vc-lime)}
+.brand-wordmark small {color:#6b7280;letter-spacing:2.4px}
+.menu-caption {color:#4b5563;padding:20px 26px 12px}
+.sidebar-nav {gap:4px;padding:0 12px}
+.nav-item {height:46px;border-radius:14px;color:#9ca3af;font-weight:600;font-size:13px}
+.nav-item:hover {background:var(--vc-ink-3);color:#fff}
+.nav-item.active {background:var(--vc-lime);color:var(--vc-ink);box-shadow:none;font-weight:700}
+.nav-item.active svg:not(.nav-arrow) {color:var(--vc-ink)}
+.nav-item.active .nav-arrow {color:var(--vc-ink)}
+.sidebar-bottom {padding:16px 14px 18px}
+.user-compact {background:var(--vc-ink-2);border-radius:16px;padding:12px}
+.user-letter {background:var(--vc-blue);color:#fff;border-radius:12px}
+.user-compact small {color:#6b7280}
+
+/* ---------- Topo ---------- */
+.topbar {background:transparent;border-bottom:0;height:84px;min-height:84px;padding:0 36px}
+.topbar-left {color:var(--vc-muted)}
+.topbar-left>span:last-child {color:var(--vc-text);font-weight:700}
+.today-top {background:#fff;border-radius:999px;padding:9px 14px;color:var(--vc-muted);box-shadow:var(--vc-shadow)}
+.top-separator {display:none}
+.company-badge {background:#fff;border-radius:999px;padding:5px 14px 5px 5px;box-shadow:var(--vc-shadow);color:var(--vc-text);font-weight:700}
+.company-initial {background:var(--vc-blue);color:#fff;border-radius:999px;height:32px;width:32px;font-size:14px}
+.topbar .icon-button {background:#fff;border-radius:999px;height:40px;width:40px;box-shadow:var(--vc-shadow);color:var(--vc-text)}
+.topbar .icon-button:hover {background:var(--vc-ink);color:var(--vc-lime)}
+.menu-toggle {background:#fff;border-radius:12px}
+.demo-banner {margin:14px 36px 0;border-radius:14px;border:0;background:var(--vc-ink);color:#d1d5db;padding:10px 16px}
+.demo-banner span:last-child {color:#9ca3af}
+.demo-chip {background:var(--vc-lime);color:var(--vc-ink)}
+.content-container {padding:10px 36px 48px}
+.app-footer {color:var(--vc-faint);padding:12px 36px 22px}
+
+/* ---------- Títulos ---------- */
+.eyebrow {color:var(--vc-blue);letter-spacing:1.8px;font-weight:800}
+.page-heading {margin-bottom:26px}
+.page-heading h1 {font-size:32px;font-weight:800;letter-spacing:-1.4px;color:var(--vc-text)}
+.page-heading p {color:var(--vc-muted)}
+.text-action {color:var(--vc-blue);font-weight:700}
+
+/* ---------- Botões ---------- */
+.btn {border-radius:12px;font-weight:700;min-height:42px}
+.btn-primary {background:var(--vc-blue);color:#fff;box-shadow:0 8px 20px #0131cd33}
+.btn-primary:hover {background:var(--vc-blue-700)}
+.btn-secondary {background:#fff;border:1px solid var(--vc-line);color:var(--vc-text)}
+.btn-secondary:hover {border-color:var(--vc-ink);background:#fff}
+.btn-ghost {color:var(--vc-muted)}
+.btn-ghost:hover {background:var(--vc-soft);color:var(--vc-text)}
+.btn-small {border-radius:10px}
+
+/* ---------- Cards e painéis ---------- */
+.panel {border:0;border-radius:var(--vc-radius);box-shadow:var(--vc-shadow);padding:24px 26px}
+.panel-header h2 {font-size:15px;font-weight:800;letter-spacing:-.3px}
+.kpi-grid {gap:16px}
+.kpi-card {background:#fff;border:0;border-radius:var(--vc-radius);box-shadow:var(--vc-shadow)}
+.kpi-card:nth-child(1) {background:var(--vc-blue);color:#fff;box-shadow:0 14px 34px #0131cd40}
+.kpi-card:nth-child(1) .kpi-label,.kpi-card:nth-child(1) .kpi-foot {color:#c7d3ff}
+.kpi-card:nth-child(1) .kpi-value {color:#fff}
+.kpi-card:nth-child(1) .kpi-icon {background:var(--vc-lime);color:var(--vc-ink);border:0}
+.kpi-card:nth-child(2),.kpi-card:nth-child(3),.kpi-card:nth-child(4) {background:#fff}
+.kpi-label {color:var(--vc-muted);font-weight:700}
+.kpi-value {color:var(--vc-text);font-weight:800;letter-spacing:-1.2px}
+.kpi-foot {color:var(--vc-faint)}
+.kpi-icon {background:var(--vc-soft);color:var(--vc-ink);border:0;border-radius:12px}
+.kpi-icon.green {background:var(--vc-lime-50);color:#4d7c0f}
+.kpi-icon.red {background:#fff1f2;color:#be123c}
+.kpi-icon.dark {background:var(--vc-ink);color:var(--vc-lime)}
+
+/* ---------- Abas, etiquetas e status ---------- */
+.period-tabs {background:#fff;border-radius:12px;box-shadow:var(--vc-shadow);padding:4px}
+.panel .period-tabs {background:var(--vc-soft);box-shadow:none}
+.period-tab {border-radius:9px;font-size:11px;font-weight:700;color:var(--vc-muted);padding:8px 12px}
+.period-tab.active {background:var(--vc-ink);color:#fff;box-shadow:none}
+.tag,.chip {background:var(--vc-soft);color:var(--vc-ink-3);border-radius:999px;padding:6px 11px}
+.status {border-radius:999px;padding:6px 10px}
+.status-blue {background:var(--vc-blue-50);color:var(--vc-blue)}
+.status-green {background:var(--vc-lime-50);color:#3f6212}
+.status-green .status-dot {background:var(--vc-lime-600)}
+.status-amber {background:#fff7e6;color:#9a6700}
+.status-red {background:#fff1f2;color:#be123c}
+
+/* ---------- Formulários e busca ---------- */
+.form-input,.search-box {border-color:var(--vc-line);border-radius:12px;background:#fff}
+.form-input:focus,.search-box:focus-within {border-color:var(--vc-blue);box-shadow:0 0 0 4px #0131cd1a}
+.search-box {box-shadow:var(--vc-shadow);border-color:transparent}
+.field-label {font-weight:700;color:var(--vc-ink-3)}
+
+/* ---------- Tabelas e listas ---------- */
+.data-table th {color:var(--vc-faint);font-weight:700;letter-spacing:.6px;border-bottom-color:var(--vc-line)}
+.data-table td {color:#374151;border-bottom-color:#f1f2f4}
+.data-table tbody tr:hover td {background:#fafbfc}
+.list-icon {background:var(--vc-soft);color:var(--vc-ink);border-radius:12px}
+.list-item-row {border-color:#f1f2f4}
+.mini-stat,.summary-tile {background:var(--vc-soft);border:0;border-radius:14px}
+.detail-line {border-color:#f1f2f4}
+.empty-icon {background:var(--vc-lime-50);color:#4d7c0f}
+.icon-button:hover {background:var(--vc-soft);color:var(--vc-text)}
+
+/* ---------- Modais ---------- */
+.modal-backdrop {background:#0b0d1299;backdrop-filter:blur(6px)}
+.modal-card {border-radius:24px;box-shadow:0 30px 90px #0b0d1240}
+.modal-summary {background:var(--vc-ink);color:#fff;border-radius:14px}
+.modal-summary strong {color:var(--vc-lime)}
+
+/* ---------- Clientes, veículos e fidelidade ---------- */
+.vehicle-card {border:0;background:var(--vc-soft);border-radius:16px}
+.vehicle-card:hover {background:#fff;box-shadow:0 0 0 2px var(--vc-blue)}
+.vehicle-icon {background:#fff;color:var(--vc-blue);border-radius:14px}
+.avatar-blue {border-color:var(--vc-blue-100)}
+.coin-count {color:#4d7c0f}
+.reward-icon {background:var(--vc-lime);color:var(--vc-ink)}
+.podium-card.first {background:var(--vc-ink);border-color:var(--vc-ink);color:#fff}
+.podium-card.first strong,.podium-card.first small {color:#fff}
+.podium-card.first .coin-count {color:var(--vc-lime)}
+.viewer-shell {background:#fff}
+.viewer-frame {border-color:var(--vc-line);border-radius:var(--vc-radius)}
+.viewer-tag {background:var(--vc-lime);color:var(--vc-ink)}
+
+/* ---------- Login ---------- */
+.auth-shell {background:var(--vc-bg)}
+.auth-brand {background:var(--vc-blue);margin:14px;border-radius:30px}
+.auth-brand::after {content:'';position:absolute;width:520px;height:520px;border-radius:50%;right:-160px;bottom:-200px;background:var(--vc-lime);opacity:.9}
+.auth-hero,.auth-foot {position:relative;z-index:1}
+.auth-hero h1 span {color:var(--vc-lime)}
+.auth-form {border:0;border-radius:24px;box-shadow:var(--vc-shadow)}
+
+@media (max-width: 930px) {
+  .sidebar {margin:0;height:100vh;top:0;border-radius:0 24px 24px 0}
+  .topbar,.content-container {padding-left:18px;padding-right:18px}
+  .demo-banner {margin:12px 18px 0}
+  .today-top {display:none}
+}
