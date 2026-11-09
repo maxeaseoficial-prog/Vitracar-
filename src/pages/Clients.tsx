@@ -1,6 +1,6 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, CalendarPlus, CarFront, FilePlus2, History, Pencil, Plus, UserRound, Wallet } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarPlus, Camera, CarFront, FilePlus2, History, MessageCircle, Pencil, Phone, Plus, X } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Avatar, Button, CoinCount, Empty, ErrorText, Field, Input, PageHeading, Panel, SearchInput, Select, Status, TableWrap, Textarea } from '../components/UI'
 import { CarViewer } from '../components/CarViewer'
@@ -8,20 +8,25 @@ import { QuickCarViewer } from '../components/vehicle/QuickCarViewer'
 import { categories } from '../lib/catalog'
 import { VehicleStudioForm } from '../components/vehicle/VehicleStudioForm'
 import { useStore } from '../lib/store'
-import { date, dateTime, escapeSearch, formatQuoteNumber, formatPlate, money, number, sum } from '../lib/utils'
-import type { Client } from '../types'
+import { avatarUri } from '../lib/avatar'
+import { date, dateTime, escapeSearch, formatPhone, formatQuoteNumber, whatsappLink, formatPlate, money, number, sum } from '../lib/utils'
+import type { AvatarKind, Client } from '../types'
 
 function ClientForm({client,onDone,onClose}:{client?:Client;onDone:()=>void;onClose:()=>void}){
   const {save,uploadClientPhoto,isDemo}=useStore()
-  const [name,setName]=useState(client?.name||''),[whatsapp,setWhatsapp]=useState(client?.whatsapp||'')
-  const [avatar,setAvatar]=useState(client?.avatar_kind||'male')
+  const [name,setName]=useState(client?.name||''),[whatsapp,setWhatsapp]=useState(formatPhone(client?.whatsapp))
+  const [avatar,setAvatar]=useState<AvatarKind>(client?.avatar_kind||'male')
   const [notes,setNotes]=useState(client?.notes||''),[photo,setPhoto]=useState<File|null>(null)
   const [busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null)
+  const photoUrl=useMemo(()=>photo?URL.createObjectURL(photo):null,[photo])
+  useEffect(()=>()=>{if(photoUrl)URL.revokeObjectURL(photoUrl)},[photoUrl])
   async function submit(e:FormEvent){
     e.preventDefault();setError(null);setBusy(true)
     try{
       if(name.trim().length<2)throw new Error('Informe o nome do cliente.')
-      const row=await save('clients',{name:name.trim(),whatsapp:whatsapp||null,
+      const digits=whatsapp.replace(/\D/g,'')
+      if(digits&&digits.length<10)throw new Error('Confira o WhatsApp: informe DDD e número.')
+      const row=await save('clients',{name:name.trim(),whatsapp:digits?formatPhone(digits):null,
         avatar_kind:avatar,notes:notes||null},client?.id)
       if(photo){
         const path=await uploadClientPhoto(String(row.id),photo)
@@ -31,21 +36,36 @@ function ClientForm({client,onDone,onClose}:{client?:Client;onDone:()=>void;onCl
     }catch(e){setError(e instanceof Error?e.message:String(e))}
     finally{setBusy(false)}
   }
-  return <form onSubmit={submit}>
-    <div className="form-grid">
-      <div className="span-2"><Field label="Nome completo"><Input required minLength={2} value={name} onChange={e=>setName(e.target.value)} placeholder="Nome e sobrenome"/></Field></div>
-      <Field label="WhatsApp"><Input type="tel" inputMode="tel" value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} placeholder="(65) 99999-9999"/></Field>
-      <Field label="Avatar padrão"><Select value={avatar} onChange={e=>setAvatar(e.target.value as 'male'|'female')}>
-        <option value="male">Avatar masculino</option><option value="female">Avatar feminino</option>
-      </Select></Field>
-      <Field label="Foto (opcional)" hint={isDemo?'Upload disponível após conectar Supabase.':'PNG, JPG ou WEBP, até 5 MB.'}>
-        <Input type="file" accept="image/png,image/jpeg,image/webp" disabled={isDemo} onChange={e=>setPhoto(e.target.files?.[0]||null)}/>
-      </Field>
-      <div className="span-2"><Field label="Observações"><Textarea rows={2} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Preferências ou informações do cliente"/></Field></div>
+  const preview=photoUrl||avatarUri(name,avatar)
+  return <form onSubmit={submit} className="client-form">
+    <aside className="client-preview">
+      <div className="client-preview-photo"><img src={preview} alt="Prévia do cliente"/>
+        {photoUrl&&<button type="button" className="client-photo-remove" onClick={()=>setPhoto(null)} aria-label="Remover foto"><X size={14}/></button>}
+      </div>
+      <strong>{name.trim()||'Novo cliente'}</strong>
+      <span>{whatsapp||'WhatsApp não informado'}</span>
+      <div className="kind-switch" role="radiogroup" aria-label="Personagem do cliente">
+        {(['male','female'] as const).map(kind=><button type="button" key={kind} role="radio" aria-checked={avatar===kind}
+          className={avatar===kind?'active':''} onClick={()=>setAvatar(kind)}>
+          <img src={avatarUri(name,kind)} alt=""/>{kind==='male'?'Masculino':'Feminino'}</button>)}
+      </div>
+      <label className={`photo-drop ${isDemo?'disabled':''}`}>
+        <Camera size={17}/><span><strong>{photo?'Trocar foto':'Enviar foto'}</strong>
+          <small>{isDemo?'Disponível com banco conectado':'JPG, PNG ou WEBP até 5 MB'}</small></span>
+        <input type="file" accept="image/png,image/jpeg,image/webp" disabled={isDemo}
+          onChange={e=>setPhoto(e.target.files?.[0]||null)}/>
+      </label>
+    </aside>
+    <div className="client-fields">
+      <Field label="Nome completo"><Input required minLength={2} value={name} onChange={e=>setName(e.target.value)} placeholder="Nome e sobrenome" autoFocus/></Field>
+      <Field label="WhatsApp"><div className="input-icon"><Phone size={16}/><Input type="tel" inputMode="tel" value={whatsapp}
+        onChange={e=>setWhatsapp(formatPhone(e.target.value))} placeholder="(65) 99999-9999"/></div></Field>
+      <Field label="Observações" hint="Preferências, horários, produtos que o cliente gosta ou evita.">
+        <Textarea rows={5} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Ex.: prefere atendimento aos sábados, carro sempre na garagem coberta..."/></Field>
+      <ErrorText message={error}/>
+      <div className="form-actions"><Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
+        <Button type="submit" disabled={busy}>{busy?'Salvando...':client?'Salvar alterações':'Cadastrar cliente'}</Button></div>
     </div>
-    <ErrorText message={error}/>
-    <div className="form-actions"><Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
-      <Button type="submit" disabled={busy}>{busy?'Salvando...':'Salvar cliente'}</Button></div>
   </form>
 }
 export function Clients(){
@@ -62,22 +82,31 @@ export function Clients(){
       actions={<Button onClick={()=>edit()}><Plus size={16}/> Novo cliente</Button>}/>
     <div className="filter-bar"><SearchInput value={search} onChange={setSearch} placeholder="Buscar nome, telefone ou placa..."/>
       <div className="filter-right"><span className="tag">{filtered.length} clientes</span><span className="tag">{data.vehicles.length} veículos</span></div></div>
-    <Panel>
-      {filtered.length?<TableWrap><thead><tr><th>CLIENTE</th><th>WHATSAPP</th><th>VEÍCULOS</th><th>MOEDAS</th><th>CADASTRADO</th><th></th></tr></thead>
-        <tbody>{filtered.map(client=>{
-          const cars=data.vehicles.filter(v=>v.client_id===client.id)
-          const coins=sum(data.loyalty_ledger.filter(l=>l.client_id===client.id).map(l=>l.change))
-          return <tr key={client.id}><td><div className="table-primary"><Avatar client={client} size="tiny"/><div>
-            <strong>{client.name}</strong><small>{cars.map(v=>v.brand+' '+v.model).slice(0,2).join(', ')||'Sem veículos'}</small></div></div></td>
-            <td>{client.whatsapp||'—'}</td><td><strong>{cars.length}</strong></td><td><CoinCount value={coins}/></td>
-            <td>{date(client.created_at)}</td>
-            <td className="actions-cell"><Button size="small" variant="ghost" onClick={()=>edit(client)}><Pencil size={14}/></Button>
-              <Button size="small" variant="secondary" onClick={()=>navigate(`/clientes/${client.id}`)}>Ver perfil</Button></td></tr>
-        })}</tbody>
-      </TableWrap>:<Empty title={search?'Nenhum cliente encontrado':'Ainda não há clientes cadastrados'}
+    {filtered.length?<div className="client-grid">{filtered.map(client=>{
+      const cars=data.vehicles.filter(v=>v.client_id===client.id)
+      const coins=sum(data.loyalty_ledger.filter(l=>l.client_id===client.id).map(l=>l.change))
+      const visits=data.service_orders.filter(o=>o.client_id===client.id).length
+      const wa=whatsappLink(client.whatsapp)
+      return <article className="client-card" key={client.id}>
+        <header><Avatar client={client} size="large"/>
+          <div className="client-card-id"><strong>{client.name}</strong><small>Cliente desde {date(client.created_at)}</small></div>
+          <button className="icon-button" onClick={()=>edit(client)} aria-label={`Editar ${client.name}`}><Pencil size={15}/></button>
+        </header>
+        {wa?<a className="client-card-phone" href={wa} target="_blank" rel="noreferrer"><MessageCircle size={15}/>{formatPhone(client.whatsapp)}</a>:
+          <span className="client-card-phone muted"><MessageCircle size={15}/>WhatsApp não informado</span>}
+        <div className="client-card-cars">{cars.length?<>{cars.slice(0,2).map(v=><span key={v.id} className="plate-chip">
+          <CarFront size={13}/>{v.brand} {v.model}<b>{formatPlate(v.plate)}</b></span>)}
+          {cars.length>2&&<span className="plate-chip more">+{cars.length-2}</span>}</>:<span className="plate-chip empty">Nenhum veículo cadastrado</span>}</div>
+        <div className="client-card-stats">
+          <div><small>Veículos</small><strong>{cars.length}</strong></div>
+          <div><small>Atendimentos</small><strong>{visits}</strong></div>
+          <div><small>Moedas</small><strong className="coins">{number(coins)}</strong></div>
+        </div>
+        <Button variant="secondary" onClick={()=>navigate(`/clientes/${client.id}`)}>Ver perfil <ArrowRight size={15}/></Button>
+      </article>
+    })}</div>:<Panel><Empty title={search?'Nenhum cliente encontrado':'Ainda não há clientes cadastrados'}
         description={search?'Experimente outro termo de busca.':'Comece cadastrando seu primeiro cliente.'}
-        action={!search?<Button size="small" onClick={()=>edit()}><Plus size={14}/> Adicionar cliente</Button>:undefined}/>}
-    </Panel>
+        action={!search?<Button size="small" onClick={()=>edit()}><Plus size={14}/> Adicionar cliente</Button>:undefined}/></Panel>}
     {modal&&<Modal title={editing?'Editar cliente':'Cadastrar cliente'} onClose={()=>setModal(false)} wide>
       <ClientForm client={editing||undefined} onDone={()=>setModal(false)} onClose={()=>setModal(false)}/>
     </Modal>}
@@ -99,7 +128,7 @@ export function ClientProfile(){
     <div className="dashboard-grid dashboard-grid-secondary">
       <Panel>
         <div className="profile-identity"><Avatar client={client} size="large"/><div><h2>{client.name}</h2>
-          <p>{client.whatsapp||'WhatsApp não informado'}</p><p>Cliente desde {date(client.created_at)}</p></div>
+          <p>{formatPhone(client.whatsapp)||'WhatsApp não informado'}</p><p>Cliente desde {date(client.created_at)}</p></div>
           <button className="icon-button" style={{marginLeft:'auto'}} onClick={()=>setShowClient(true)} aria-label="Editar cliente"><Pencil size={17}/></button>
         </div>
         <div className="profile-summary">
