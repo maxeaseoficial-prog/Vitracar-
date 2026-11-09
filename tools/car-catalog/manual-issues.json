@@ -1,0 +1,20 @@
+{
+ "chevrolet-chevette": "O arquivo contém somente o motor.",
+ "chevrolet-impala-undercarriage": "Arquivo não é um carro completo.",
+ "honda-cb-750": "Motocicleta.",
+ "honda-crf-450": "Motocicleta.",
+ "hyundai-excavator": "Máquina pesada.",
+ "hyundai-hl975a-wheel": "Máquina pesada.",
+ "lamborghini-race-steering": "Volante, não um carro.",
+ "lamborghini-steering-wheel": "Volante, não um carro.",
+ "lamborghini-tractor-r6": "Trator.",
+ "lamborghini-wheel-pack": "Rodas avulsas.",
+ "mazda-rx7-stylised": "Modelo sem materiais visíveis.",
+ "porsche-court-test": "Estrutura, não um carro.",
+ "ram-soviet-tram": "Bonde.",
+ "suzuki-gsx-750": "Motocicleta.",
+ "suzuki-gsxr-750": "Motocicleta.",
+ "volkswagen-variant": "Cenário, não um carro.",
+ "van-entrega": "Baú de carga, não um carro.",
+ "vw-saveiro": "Modelo em wireframe, sem superfícies."
+}

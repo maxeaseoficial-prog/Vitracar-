@@ -147,8 +147,8 @@ export function ClientProfile(){
 export function VehicleDetail(){
   const {id}=useParams(),{data}=useStore(),navigate=useNavigate()
   const [editing,setEditing]=useState(false)
-  const [viewMode,setViewMode]=useState<'quick'|'original'>('quick')
   const v=data.vehicles.find(x=>x.id===id)
+  const [viewMode,setViewMode]=useState<'quick'|'original'>(v?.model_3d_id?'original':'quick')
   if(!v)return <Empty title="Veículo não encontrado" action={<Button onClick={()=>navigate('/clientes')}>Voltar</Button>}/>
   const client=data.clients.find(c=>c.id===v.client_id)
   const orders=data.service_orders.filter(o=>o.vehicle_id===v.id&&o.status==='completed')
@@ -156,7 +156,7 @@ export function VehicleDetail(){
   const last=orders[0]
   const info=[
     ['Proprietário',client?.name||'—'],['Placa',formatPlate(v.plate)],['Marca',v.brand],
-    ['Modelo',v.model],['Ano',v.year?.toString()||'—'],['Cor',v.color],
+    ['Modelo',v.model],['Ano',v.year?.toString()||'—'],['Cor',v.color==='Original'?'Original do modelo':v.color],
     ['Categoria',categories[v.category||'']||v.category||'—'],['Estofado',v.upholstery||'—'],
     ['Último serviço',last?date(last.completed_at):'Nenhum']
   ]
@@ -169,9 +169,9 @@ export function VehicleDetail(){
       <div>
         <div className="v-mode-switch v-detail-mode" role="group" aria-label="Modo de visualização">
           <button type="button" className={viewMode==='quick'?'active':''} aria-pressed={viewMode==='quick'}
-            onClick={()=>setViewMode('quick')}>3D leve · instantâneo</button>
+            onClick={()=>setViewMode('quick')}>3D simplificado</button>
           <button type="button" className={viewMode==='original'?'active':''} aria-pressed={viewMode==='original'}
-            disabled={!v.model_3d_id} onClick={()=>setViewMode('original')}>3D original</button>
+            disabled={!v.model_3d_id} onClick={()=>setViewMode('original')}>Modelo real</button>
         </div>
         {viewMode==='original'&&v.model_3d_id?
           <CarViewer modelId={v.model_3d_id} color={v.color} plate={v.plate}/>:
