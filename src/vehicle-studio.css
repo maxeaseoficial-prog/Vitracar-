@@ -187,3 +187,8 @@
  .v-quick-badge{font-size:8px}
 }
 .v-credit-line{display:block;margin-top:2px;font-size:11px;color:#7d8da1}.v-credit-line a{color:inherit;text-decoration:underline}
+.v-pick-photo-frame{background:#fff}
+.v-pick-photo{object-fit:contain;background:#fff}
+.v-swatch-original{background:conic-gradient(#b4242f,#f6c343,#2fb66d,#1259bf,#9ba5b3,#b4242f);display:grid;place-items:center}
+.v-swatch-original span{font-size:8px;font-weight:800;color:#18243c;background:#fff;border-radius:4px;padding:1px 3px}
+.v-pick-art,.v-pick-art:has(.v-pick-photo.loaded){background:#fff}.v-pick-card .v-pick-art{height:96px}

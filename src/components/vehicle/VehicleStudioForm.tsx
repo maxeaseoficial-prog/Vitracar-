@@ -23,12 +23,12 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
   const [brand,setBrand]=useState(vehicle?.brand||'')
   const [model,setModel]=useState(vehicle?.model||'')
   const [year,setYear]=useState(vehicle?.year?.toString()||'')
-  const [color,setColor]=useState(vehicle?.color||'Prata')
+  const [color,setColor]=useState(vehicle?.color||(vehicle?'Prata':'Original'))
   const [category,setCategory]=useState(vehicle?.category||'')
   const [upholstery,setUpholstery]=useState(vehicle?.upholstery||'Tecido')
   const [model3d,setModel3d]=useState(vehicle?.model_3d_id||'')
   const [notes,setNotes]=useState(vehicle?.notes||'')
-  const [viewMode,setViewMode]=useState<'quick'|'original'>('quick')
+  const [viewMode,setViewMode]=useState<'quick'|'original'>(vehicle?.model_3d_id?'original':'quick')
   const [manual,setManual]=useState(Boolean(vehicle&&!vehicle.model_3d_id))
   const [cars,setCars]=useState<CatalogCar[]>([])
   const [loadingCatalog,setLoadingCatalog]=useState(true)
@@ -51,7 +51,7 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
   // Mostrar todos os registros de marcas e modelos: o 3D leve não depende do GLB original.
   const selectedCar=useMemo(()=>cars.find(car=>car.id===model3d)||null,[cars,model3d])
   const plateText=normalizePlate(plate)
-  const canRepaint=Boolean(selectedCar && isUsableModel(selectedCar) && selectedCar.paint && selectedCar.paint.confidence!=='baixa')
+  const canRepaint=Boolean(selectedCar && isUsableModel(selectedCar) && selectedCar.paint.length)
   const isColorAvailable=viewMode==='quick'||!selectedCar||canRepaint
   const canSubmit=validPlate(plate) && brand.trim().length>0 && model.trim().length>0 &&
     (manual || Boolean(selectedCar) || Boolean(vehicle?.model_3d_id&&model3d===vehicle.model_3d_id))
@@ -62,13 +62,15 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
     setModel(car.model)
     setCategory(car.category)
     setManual(false)
-    setViewMode('quick')
+    // O modelo real é o padrão; o 3D simplificado fica para arquivos com problema.
+    setViewMode(isUsableModel(car)?'original':'quick')
     setError(null)
   }
 
   function enableManual(){
     setManual(true)
     setViewMode('quick')
+    setColor(c=>c==='Original'?'Prata':c)
     setModel3d('')
     setBrand('')
     setModel('')
@@ -141,7 +143,7 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
           <strong>{manual?(brand&&model?`${brand} ${model}`:'Veículo sem modelo 3D') :
             selectedCar?`${selectedCar.brand} ${selectedCar.model}`:'Selecione um veículo'}</strong>
           {(selectedCar||manual)&&<small>{categories[selectedCar?.category||category]||'Veículo'} ·
-            {viewMode==='quick'?' Prévia 3D ilustrativa por categoria':' Modelo 3D original (experimental)'}</small>}
+            {viewMode==='quick'?' Prévia 3D ilustrativa por categoria':' Modelo 3D real'}</small>}
           {selectedCar&&!manual&&<small className="v-credit-line">Foto e modelo original: {selectedCar.credit.sourceUrl?
             <a href={selectedCar.credit.sourceUrl} target="_blank" rel="noreferrer">{selectedCar.credit.author}</a>:selectedCar.credit.author}
             {' · '}{selectedCar.credit.license}</small>}
@@ -149,11 +151,11 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
 
         {(selectedCar||manual)&&<div className="v-mode-switch" role="group" aria-label="Modo de visualização do veículo">
           <button type="button" aria-pressed={viewMode==='quick'} className={viewMode==='quick'?'active':''}
-            onClick={()=>setViewMode('quick')}>3D leve · instantâneo</button>
+            onClick={()=>setViewMode('quick')}>3D simplificado</button>
           <button type="button" aria-pressed={viewMode==='original'} className={viewMode==='original'?'active':''}
             disabled={!selectedCar||manual||!isUsableModel(selectedCar)}
             title={!selectedCar||manual||!isUsableModel(selectedCar)?'O modelo original não está disponível ou está incompleto.':'Ver arquivo 3D original'}
-            onClick={()=>setViewMode('original')}>Original · experimental</button>
+            onClick={()=>setViewMode('original')}>Modelo real</button>
         </div>}
         {(selectedCar||manual)?
           viewMode==='original'&&selectedCar&&!manual?
@@ -167,11 +169,7 @@ export function VehicleStudioForm({clientId,vehicle,onDone,onClose}:Props) {
             <div className="v-placeholder-plate"><span>BRASIL</span><strong>{plateText||'ABC1D23'}</strong></div>
           </div>}
 
-        {viewMode==='original'&&<p className="v-original-warning">
-          O modelo original pode apresentar peças incompletas, pintura incorreta ou carregamento demorado.
-          Use o 3D leve para uma prévia consistente.
-        </p>}
-        <ColorSwatches value={color} onChange={setColor} canRepaint={isColorAvailable}/>
+        <ColorSwatches value={color} onChange={setColor} canRepaint={isColorAvailable} allowOriginal={Boolean(selectedCar&&!manual)}/>
       </div>
     </div>
 

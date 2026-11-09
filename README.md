@@ -27,6 +27,10 @@ npm run dev
 
 Sem variáveis de ambiente a aplicação abre em **modo de demonstração vazio**, sem clientes, veículos, serviços, orçamentos, agendas, despesas, pagamentos ou moedas pré-cadastrados. Os registros criados na prévia são temporários e desaparecem ao recarregar a página. Um aviso de ausência de banco permanece visível. **Não use a prévia para dados de clientes reais.**
 
+## Catálogo de veículos
+
+`src/data/car-catalog.json` e as fotos em `public/car-thumbs/` são gerados a partir dos modelos de [pedrosoandre/carros](https://github.com/pedrosoandre/carros) por `npm run catalog` (clone o repositório ao lado deste, em `../carros`). O gerador abre cada GLB, tira a foto com fundo branco, descarta o que não é um carro completo (motores, rodas, volantes, motos, cenários) e descobre quais materiais formam a lataria pintando cada candidato e medindo quanto do carro muda. Carros cuja lataria não pode ser separada (arquivo com um único material) mantêm a cor original. Exclusões manuais ficam em `tools/car-catalog/manual-issues.json`.
+
 ## Banco de dados e autenticação
 
 1. Crie um **projeto Supabase dedicado e vazio**.

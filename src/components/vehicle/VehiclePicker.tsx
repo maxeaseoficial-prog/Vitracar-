@@ -24,7 +24,7 @@ function VehiclePhoto({car}:{car:CatalogCar}){
   useEffect(()=>{setFailed(false);setLoaded(false)},[thumbnail])
   return <span className="v-pick-photo-frame">
     {thumbnail&&!failed&&<img src={thumbnail} loading="lazy" decoding="async"
-      alt={`Prévia real: ${car.brand} ${car.model}`}
+      alt={`${car.brand} ${car.model}`}
       className={loaded?'v-pick-photo loaded':'v-pick-photo'}
       onLoad={()=>setLoaded(true)} onError={()=>setFailed(true)}/>}
     {(!thumbnail||failed||!loaded)&&<span className="v-pick-photo-placeholder">
@@ -38,6 +38,8 @@ export function VehiclePicker({cars,selectedId,loading,error,onSelect,onRetry}:P
   const [query,setQuery] = useState('')
   const [brand,setBrand] = useState('all')
   const [page,setPage] = useState(0)
+  // Arquivos que não são um carro completo (só motor, vários carros, peças soltas) ficam fora da lista.
+  cars = useMemo(()=>cars.filter(c=>!c.issue),[cars])
   const brands = useMemo(()=>[...new Set(cars.map(c=>c.brand))].sort((a,b)=>a.localeCompare(b,'pt-BR')),[cars])
   const filtered = useMemo(()=>{
     const q = escapeSearch(query.trim())

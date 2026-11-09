@@ -13,16 +13,21 @@ const presets = [
   {name:'Bege',hex:'#d9c9ac'},
 ]
 
-export function ColorSwatches({value,onChange,canRepaint}:{
+export function ColorSwatches({value,onChange,canRepaint,allowOriginal=false}:{
   value:string
   onChange:(next:string)=>void
   canRepaint:boolean
+  allowOriginal?:boolean
 }){
   const custom=/^#[0-9a-f]{6}$/i.test(value)
+  const original=value.toLowerCase()==='original'
   return <div className="v-color-panel">
     <div className="v-color-topline"><span className="v-studio-step">02</span><strong>Personalize a pintura</strong>
-      <span className="v-color-selected">{custom?'Personalizada':value}</span></div>
+      <span className="v-color-selected">{custom?'Personalizada':original?'Cor original':value}</span></div>
     <div className="v-color-options" role="group" aria-label="Escolha a cor do veículo">
+      {allowOriginal&&<button type="button" title="Cor original do modelo" aria-label="Manter a cor original do modelo"
+        aria-pressed={original} onClick={()=>onChange('Original')} className={`v-swatch v-swatch-original ${original?'active':''}`}>
+        {original?<Check size={16} color="#18243c" strokeWidth={3}/>:<span>ORIG</span>}</button>}
       {presets.map(p=><button key={p.name} type="button" title={p.name}
         aria-label={`Selecionar cor ${p.name}`} aria-pressed={!custom&&value.toLowerCase()===p.name.toLowerCase()}
         onClick={()=>onChange(p.name)} className={`v-swatch ${!custom&&value.toLowerCase()===p.name.toLowerCase()?'active':''}`}

@@ -1,9 +1,11 @@
 import { Component, Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Canvas } from '@react-three/fiber'
-import { Bounds, Center, ContactShadows, Html, OrbitControls, useGLTF } from '@react-three/drei'
-import { Box3, CanvasTexture, DoubleSide, Mesh, MeshStandardMaterial, SRGBColorSpace, Vector3, type Material } from 'three'
+import { Canvas, useThree } from '@react-three/fiber'
+import { OrbitControls, useGLTF } from '@react-three/drei'
+import { Box3, CanvasTexture, DoubleSide, Mesh, MeshStandardMaterial, PMREMGenerator, SRGBColorSpace, Vector3, type Material } from 'three'
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
+import { materialOrder } from '../lib/paint'
 import { AlertCircle, Box, ExternalLink, RotateCcw } from 'lucide-react'
-import { getAssetUrl, getCatalog, getModelThumbnailUrl, modelQualityIssue, paintColor, type CatalogCar } from '../lib/catalog'
+import { getAssetUrl, getCatalog, getModelThumbnailUrl, isOriginalColor, modelQualityIssue, paintColor, type CatalogCar } from '../lib/catalog'
 import { normalizePlate } from '../lib/utils'
 import { Loading } from './UI'
 
@@ -69,54 +71,67 @@ function PhysicalPlates({bounds,texture}:{bounds:Box3;texture:CanvasTexture}){
 
 function Model({car,color,plate,onReady}:{car:CatalogCar;color:string;plate:string;onReady:()=>void}){
   const {scene}=useGLTF(getAssetUrl(car))
+  const original=isOriginalColor(color)
   const {model,bounds,paintMaterials}=useMemo(()=>{
     const model=scene.clone(true)
+    model.traverse(o=>{if(o instanceof Mesh)o.castShadow=true})
     const paintMaterials:MeshStandardMaterial[]=[]
-    if(car.paint && car.paint.confidence!=='baixa'){
-      const named=new Set(car.paint.materials)
+    // Só a lataria detectada pelo gerador do catálogo recebe a cor; faróis,
+    // lanternas e vidros mantêm o material original. Na cor "Original" nada
+    // é alterado.
+    if(!original&&car.paint.length){
+      const order=materialOrder(model)
+      const body=new Set(car.paint.map(i=>order[i]).filter(Boolean))
+      const own=new Map<Material,Material>()
+      const repaint=(mat:Material):Material=>{
+        if(!body.has(mat)||!(mat instanceof MeshStandardMaterial))return mat
+        // Jamais modificar o material em cache: outros carros usam o mesmo GLB.
+        if(!own.has(mat)){const c=mat.clone();paintMaterials.push(c);own.set(mat,c)}
+        return own.get(mat)!
+      }
       model.traverse(child=>{
         if(!(child instanceof Mesh))return
-        const repaint=(mat:Material):Material=>{
-          if(!(mat instanceof MeshStandardMaterial)||!named.has(mat.name))return mat
-          // Jamais modificar o material global em cache: outros carros
-          // e outros clientes podem usar o mesmo GLB em paralelo.
-          const own=mat.clone()
-          paintMaterials.push(own)
-          return own
-        }
-        child.material=Array.isArray(child.material)
-          ? child.material.map(repaint)
-          : repaint(child.material)
+        child.material=Array.isArray(child.material)?child.material.map(repaint):repaint(child.material)
       })
     }
     return {model,bounds:new Box3().setFromObject(model),paintMaterials}
-  },[car,scene])
+  },[car,scene,original])
   const texture=useMemo(()=>createMercosulTexture(plate),[plate])
   useEffect(()=>{
     const hex=paintColor(color)
     for(const material of paintMaterials){
-      // A textura de pintura original (muitas vezes preta) multiplica
-      // a nova cor e deixa verde/vermelho/azul quase pretos. Removê-la
-      // SOMENTE do material cadastrado como lataria.
-      if(material.map)material.map=null
+      // A textura original multiplicaria a nova cor (verde e vermelho virariam quase preto).
+      material.map=null
       material.vertexColors=false
       material.color.set(hex)
-      material.metalness=.13
-      material.roughness=.39
       material.transparent=false
       material.opacity=1
-      material.emissive.set(hex)
-      material.emissiveIntensity=.15
       material.needsUpdate=true
     }
   },[color,paintMaterials])
   useEffect(()=>{onReady()},[onReady])
   useEffect(()=>()=>{paintMaterials.forEach(m=>m.dispose())},[paintMaterials])
   useEffect(()=>()=>{texture?.dispose()},[texture])
-  return <Bounds fit clip observe margin={1.3}><Center><group>
+  // Cada arquivo vem numa escala (milímetros, metros, unidades soltas). Normaliza
+  // para ~4,5 m de comprimento, centralizado e apoiado no chão, para que a câmera
+  // e a sombra fiquem iguais em todos os carros.
+  const size=bounds.getSize(new Vector3()),center=bounds.getCenter(new Vector3())
+  const k=4.5/Math.max(size.x,size.z,1e-6)
+  return <group scale={k} position={[-center.x*k,-bounds.min.y*k,-center.z*k]}>
     <primitive object={model}/>
     {texture&&<PhysicalPlates bounds={bounds} texture={texture}/>}
-  </group></Center></Bounds>
+  </group>
+}
+// Reflexos de estúdio gerados localmente (sem baixar HDR de CDN), como na foto do catálogo.
+function StudioLight(){
+  const {gl,scene}=useThree()
+  useEffect(()=>{
+    const pmrem=new PMREMGenerator(gl)
+    const env=pmrem.fromScene(new RoomEnvironment(),.04).texture
+    scene.environment=env
+    return()=>{scene.environment=null;env.dispose();pmrem.dispose()}
+  },[gl,scene])
+  return null
 }
 function Fallback({reason}:{reason:string}){
   return <div className="viewer-fallback"><div className="viewer-fallback-icon"><Box size={32}/></div>
@@ -170,23 +185,22 @@ export function CarViewer({modelId,color,plate='',car:providedCar,variant='stand
     <div className="viewer-topline"><span className="viewer-live-dot"/>SHOWROOM INTERATIVO
       <span className="viewer-tag">{canDraw?'360°':'PRÉVIA'}</span></div>
     <div className="viewer-shell">
-      {canDraw&&<Canvas camera={{position:[5,2.8,7],fov:40}} shadows dpr={[1,1.5]}
-        gl={{antialias:true,alpha:false}} onCreated={({gl})=>{gl.toneMappingExposure=1.2}}>
-        <color attach="background" args={['#f7faff']}/>
-        <ambientLight intensity={2.1}/>
-        <hemisphereLight args={['#ffffff','#d4deee',2.1]}/>
-        <directionalLight position={[7,11,7]} intensity={3.0} castShadow/>
-        <directionalLight position={[-6,6,-5]} intensity={2.0}/>
-        <directionalLight position={[0,3,-8]} intensity={1.1}/>
+      {canDraw&&<Canvas camera={{position:[4.7,2.2,5.4],fov:36}} shadows dpr={[1,1.5]}
+        gl={{antialias:true,alpha:false}} onCreated={({gl})=>{gl.toneMappingExposure=1}}>
+        <color attach="background" args={['#ffffff']}/>
+        <StudioLight/>
+        <directionalLight position={[4,10,5]} intensity={1.2} castShadow shadow-mapSize={[1024,1024]}
+          shadow-camera-left={-5} shadow-camera-right={5} shadow-camera-top={5} shadow-camera-bottom={-5} shadow-camera-far={30}/>
         <Suspense fallback={null}>
           <SceneBoundary key={car.id} onError={()=>setModelFailed(true)}>
             <Model key={`${car.id}-${cameraKey}`} car={car} color={color} plate={plate}
               onReady={()=>markReady(car.id)}/>
           </SceneBoundary>
         </Suspense>
-        <ContactShadows position={[0,-1,0]} opacity={.17} scale={18} blur={2.8} far={5}/>
-        <OrbitControls key={cameraKey} makeDefault enableDamping dampingFactor={.08}
-          autoRotate={auto} autoRotateSpeed={.55} minDistance={.8} maxDistance={100} enablePan={false}/>
+        <mesh rotation={[-Math.PI/2,0,0]} receiveShadow><planeGeometry args={[40,40]}/><shadowMaterial opacity={.13}/></mesh>
+        <OrbitControls key={cameraKey} makeDefault enableDamping dampingFactor={.08} target={[0,.7,0]}
+          autoRotate={auto} autoRotateSpeed={.55} minDistance={3.5} maxDistance={14} enablePan={false}
+          minPolarAngle={.2} maxPolarAngle={Math.PI*.48}/>
       </Canvas>}
       {(invalid||!webgl||modelFailed||!ready)&&<div className={`viewer-poster ${invalid||modelFailed?'viewer-poster-static':''}`}>
         {photo&&!photoFailed&&<img src={photo} alt={`Fotografia de referência de ${car.brand} ${car.model}`}

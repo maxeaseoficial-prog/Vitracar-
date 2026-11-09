@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "check": "tsc --noEmit",
     "preview": "vite preview",
-    "test:db": "node supabase/tests/schema.test.mjs"
+    "test:db": "node supabase/tests/schema.test.mjs",
+    "catalog": "node tools/car-catalog/build.mjs --assets ../carros"
   },
   "dependencies": {
     "@react-three/drei": "9.121.4",
@@ -31,6 +32,7 @@
     "@types/three": "0.171.0",
     "@vitejs/plugin-react": "4.3.4",
     "autoprefixer": "10.4.20",
+    "playwright-core": "^1.65.0",
     "postcss": "8.4.49",
     "tailwindcss": "3.4.17",
     "typescript": "5.7.3",

@@ -2,20 +2,22 @@
 // não alteram a VitraCar sem uma atualização deliberada desta versão.
 export type CatalogCar = {
   id:string; brand:string; model:string; years:[number,number]; category:string; file:string; bytes:number
-  paint:null | { materials:string[]; textured:boolean; confidence:string }
+  // Índices (na ordem de materialOrder) dos materiais da lataria, detectados
+  // pelo gerador do catálogo. Vazio: a cor original não pode ser trocada.
+  paint:number[]
+  // Foto com fundo branco gerada a partir do próprio modelo 3D.
+  photo:boolean
+  // Motivo pelo qual o arquivo não representa um carro completo.
+  issue:string|null
   credit: { author:string; authorUrl:string|null; sourceName:string|null; sourceUrl:string|null; license:string }
 }
-type Manifest = { count:number; cars:CatalogCar[] }
-const manifestUrl = import.meta.env.VITE_CAR_MANIFEST_URL || 'https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/cars.json'
 const assetsUrl = (import.meta.env.VITE_CAR_ASSET_BASE_URL || 'https://cdn.jsdelivr.net/gh/pedrosoandre/carros@2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets').replace(/\/$/, '')
 let cache: Promise<CatalogCar[]> | undefined
+// Catálogo gerado por tools/car-catalog (fotos, lataria e validação de cada GLB).
+// Carregado sob demanda para não pesar na primeira tela.
 export const getCatalog = () => {
-  cache ??= fetch(manifestUrl).then(async r => {
-    if (!r.ok) throw new Error('Catálogo 3D indisponível')
-    const data = await r.json() as Manifest
-    if (!Array.isArray(data.cars)) throw new Error('Catálogo inválido')
-    return data.cars
-  }).catch(error => { cache = undefined; throw error })
+  cache ??= import('../data/car-catalog.json').then(m => (m.default.cars as unknown as CatalogCar[]))
+    .catch(error => { cache = undefined; throw error })
   return cache
 }
 export const getAssetUrl = (car: CatalogCar) => assetsUrl + '/' + encodeURIComponent(car.file)
@@ -29,31 +31,21 @@ const colors:Record<string,string> = {
   cinza:'#646f7c', vermelho:'#b4242f', vermelha:'#b4242f', azul:'#1259bf',
   verde:'#2fb66d', amarelo:'#f6c343', amarela:'#f6c343', bege:'#d9c9ac'
 }
+export const ORIGINAL_COLOR = 'Original'
+export const isOriginalColor = (color:string) => color.trim().toLowerCase() === 'original'
 export const paintColor = (color:string) => {
   if (/^#[0-9a-f]{6}$/i.test(color)) return color
+  if (isOriginalColor(color)) return '#9ba5b3'
   return colors[color.toLowerCase().trim()] ?? '#697b98'
 }
 
 
-// Alguns arquivos no catálogo externo não representam veículos completos.
-// O arquivo Chevette contém somente o motor; o Caravan contém vários
-// elementos dispersos. Não oferecer esses GLBs como carros funcionais.
-const invalidModelReasons: Record<string,string> = {
-  'chevrolet-chevette': 'O arquivo original contém somente o motor.',
-  'chevrolet-caravan': 'O arquivo original possui vários elementos dispersos, não um carro único.'
-}
 export function modelQualityIssue(car: CatalogCar): string | null {
-  if (invalidModelReasons[car.id]) return invalidModelReasons[car.id]
-  if (/^(engine|motor)\b/i.test(car.credit.sourceName?.trim() || '')) {
-    return 'Este arquivo original representa um componente mecânico, não o carro completo.'
-  }
-  return null
+  return car.issue
 }
 export function isUsableModel(car: CatalogCar): boolean {
   return !modelQualityIssue(car)
 }
 export function getModelThumbnailUrl(car: CatalogCar): string | null {
-  const source = car.credit.sourceUrl || ''
-  const match = source.match(/([a-f0-9]{32})(?:\/)?(?:[?#].*)?$/i)
-  return match ? '/api/vehicle-image?uid=' + match[1].toLowerCase() : null
+  return car.photo ? '/car-thumbs/' + car.id + '.webp' : null
 }
