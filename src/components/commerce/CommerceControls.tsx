@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { CarFront, Check, ChevronDown, Search, UserRound, X } from 'lucide-react'
-import { Avatar } from '../UI'
+import { AttentionNotice, Avatar } from '../UI'
 import type { Client, StatusQuote, Vehicle } from '../../types'
 import { escapeSearch, formatPhone, formatPlate } from '../../lib/utils'
 import { paintColor } from '../../lib/catalog'
@@ -36,7 +36,7 @@ export function QuoteStatusPicker({value,onChange,disabled=false,label='Alterar 
       <QuoteStatusBadge status={value}/><ChevronDown size={13}/>
     </button>
     {open&&<div className="cx-status-menu" id={id} role="menu" aria-label={label}>
-      {QUOTE_STATUSES.map(s=><button key={s.value} type="button" role="menuitemradio" aria-checked={value===s.value}
+      {QUOTE_STATUSES.map(s=><button type="button" key={s.value} role="menuitemradio" aria-checked={value===s.value}
         onClick={()=>{onChange(s.value);setOpen(false);trigger.current?.focus()}}>
         <QuoteStatusBadge status={s.value}/>{value===s.value&&<Check size={14}/>}</button>)}
     </div>}
@@ -106,7 +106,7 @@ export function ClientVehiclePicker({clients,vehicles,clientId,vehicleId,onClien
             <Avatar client={c} size="tiny"/><span><strong>{c.name}</strong>
               <small>{formatPhone(c.whatsapp)||'Sem WhatsApp'} · {vehicles.filter(v=>v.client_id===c.id).length} veículo(s)</small></span>
             {c.id===clientId&&<Check size={16}/>}</button>)}
-          {!filtered.length&&<div className="cx-choice-empty">{clients.length?'Nenhum cliente encontrado.':'Cadastre um cliente para começar.'}</div>}
+          {!filtered.length&&<div className="cx-choice-empty">{clients.length?'Nenhum cliente encontrado.':<AttentionNotice>Cadastre um cliente para começar.</AttentionNotice>}</div>}
         </div>
       </div>}
       <small className="cx-helper">O avatar e os dados vêm do cadastro do cliente.</small>
@@ -114,7 +114,7 @@ export function ClientVehiclePicker({clients,vehicles,clientId,vehicleId,onClien
     <div className="cx-owned-vehicles">
       <span className="cx-field-label">{client?`Veículos de ${client.name.split(' ')[0]}`:'Veículo'}{client&&<b>{owned.length}</b>}</span>
       {!client?<div className="cx-vehicle-empty"><CarFront size={25}/><span>Selecione um cliente para ver os carros cadastrados.</span></div>:
-        !owned.length?<div className="cx-vehicle-empty"><CarFront size={25}/><span>Este cliente ainda não tem veículos. Cadastre um carro no perfil dele antes de criar o orçamento.</span></div>:
+        !owned.length?<AttentionNotice>Este cliente ainda não tem veículos. Cadastre um carro no perfil dele antes de continuar.</AttentionNotice>:
           <div className="cx-owned-list" role="radiogroup" aria-label="Escolha o veículo do cliente">
             {owned.map(v=><button type="button" role="radio" key={v.id} disabled={disabled} aria-checked={vehicleId===v.id}
               className={`cx-vehicle-option ${vehicleId===v.id?'is-selected':''}`} onClick={()=>onVehicle(v.id)}>
@@ -124,3 +124,4 @@ export function ClientVehiclePicker({clients,vehicles,clientId,vehicleId,onClien
     </div>
   </div>
 }
+

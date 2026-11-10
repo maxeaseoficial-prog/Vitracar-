@@ -13,6 +13,7 @@ export function Loyalty(){
   const [name,setName]=useState(''),[description,setDescription]=useState(''),[cost,setCost]=useState('500')
   const [redeemOpen,setRedeemOpen]=useState(false),[clientId,setClientId]=useState(''),[rewardId,setRewardId]=useState('')
   const [error,setError]=useState<string|null>(null),[saving,setSaving]=useState(false)
+  const [pageError,setPageError]=useState<string|null>(null)
   const ranked=useMemo(()=>{
     const now=new Date()
     return data.clients.map(client=>{
@@ -56,14 +57,16 @@ export function Loyalty(){
     finally{setSaving(false)}
   }
   async function toggle(r:LoyaltyReward){
+    setPageError(null)
     try{await save('loyalty_rewards',{active:!r.active},r.id)}
-    catch(e){alert(e instanceof Error?e.message:String(e))}
+    catch(e){setPageError(e instanceof Error?e.message:String(e))}
   }
   const spotlight=[ranked[1],ranked[0],ranked[2]]
   return <>
     <PageHeading eyebrow="RELACIONAMENTO" title="Moedas VitraCar" subtitle="Incentive a recorrência com recompensas e conquistas reais."
       actions={<><Button variant="secondary" onClick={()=>openReward()}><Plus size={15}/> Nova recompensa</Button>
         <Button onClick={openRedeem}><Gift size={15}/> Resgatar moedas</Button></>}/>
+    <ErrorText message={pageError}/>
     <div className="kpi-grid" style={{gridTemplateColumns:'repeat(3,minmax(0,1fr))'}}>
       <div className="kpi-card"><div className="kpi-head"><span className="kpi-label">Moedas distribuídas</span><span className="kpi-icon"><Coins size={18}/></span></div>
         <div className="kpi-value">{number(totalDistributed)}</div><div className="kpi-foot">Créditos por serviços quitados</div></div>
@@ -136,3 +139,4 @@ export function Loyalty(){
     </Modal>}
   </>
 }
+

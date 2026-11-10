@@ -1,4 +1,5 @@
 import { Check, Pipette } from 'lucide-react'
+import { AttentionNotice } from '../UI'
 import { paintColor } from '../../lib/catalog'
 
 const presets = [
@@ -38,6 +39,7 @@ export function ColorSwatches({value,onChange,canRepaint,allowOriginal=false}:{
         <Pipette size={17}/><input type="color" value={paintColor(value)} aria-label="Escolher cor personalizada"
           onChange={e=>onChange(e.target.value.toUpperCase())}/></label>
     </div>
-    {!canRepaint&&<p className="v-color-warning">A pintura deste arquivo 3D não pode ser alterada com segurança. A cor será salva corretamente no cadastro.</p>}
+    {!canRepaint&&<AttentionNotice>A pintura deste arquivo 3D não pode ser alterada com segurança. A cor será salva corretamente no cadastro.</AttentionNotice>}
   </div>
 }
+

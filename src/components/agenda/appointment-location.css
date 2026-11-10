@@ -1,0 +1,23 @@
+.wash-location-choice{min-width:0;margin:0;padding:0;border:0}
+.wash-location-choice legend{font-size:13px;font-weight:700;color:#232833;margin-bottom:10px}
+.wash-location-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.wash-location-option{position:relative;display:flex;align-items:center;gap:10px;padding:15px 13px;border:1px solid #e2e7ee;border-radius:12px;cursor:pointer;font-size:12px;font-weight:700;color:#53627b;background:white;min-width:0}
+.wash-location-option.is-selected{border-color:#0131cd;background:#eef2ff;color:#0131cd;box-shadow:0 0 0 1px #0131cd}
+.wash-location-option:focus-within{outline:3px solid #0131cd40;outline-offset:3px}
+.wash-location-option:has(input:disabled){opacity:.65;cursor:default}
+.wash-location-option svg{flex-shrink:0}
+.wash-location-option input{position:absolute;inset:0;z-index:1;width:100%;height:100%;padding:0;margin:0;opacity:0;border:0;cursor:inherit}
+.wash-location-option .wash-location-check{margin-left:auto}
+.wash-store-address{display:block;color:#69768d;font-size:12px;line-height:1.5;margin-top:10px}
+.wash-contact{min-width:0;margin:9px 0}
+.wash-location-badge{display:inline-flex;align-items:center;gap:5px;border-radius:6px;background:#f1f3f6;padding:4px 6px;color:#596479;font-size:10px;font-weight:650;line-height:1.4}
+.wash-location-badge.is-external{background:#eef2ff;color:#0131cd}
+.wash-customer-address{font-size:10px;line-height:1.5;color:#65728a;margin:6px 0;overflow-wrap:anywhere}
+.wash-contact-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.wash-contact-actions a,.wash-contact-disabled{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;padding:7px 8px;border:1px solid #cce7d6;border-radius:8px;color:#16713d;background:#f0f9f3;font-size:10px;font-weight:700;line-height:1.2;text-decoration:none}
+.wash-contact-actions a:hover{background:#e4f3e9}
+.wash-contact-actions .wash-maps-link{background:#eef2ff;color:#0131cd;border-color:#dbe3ff}
+.wash-contact-actions .wash-maps-link:hover{background:#dfe7ff}
+.wash-contact-disabled{background:#f6f7f9;color:#778298;border-color:#e9ebef;cursor:not-allowed}
+.wash-contact-actions svg{flex-shrink:0}
+@media(max-width:500px){.wash-location-options{grid-template-columns:1fr}.wash-contact-actions a,.wash-contact-disabled{min-height:40px}}

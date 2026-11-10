@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Building2, Camera, LogOut, Settings2, ShieldCheck, UploadCloud } from 'lucide-react'
-import { Button, ErrorText, Field, Input, PageHeading, Panel, Select, Textarea } from '../components/UI'
+import { AttentionNotice, Button, ErrorText, Field, Input, PageHeading, Panel, Select, Textarea } from '../components/UI'
 import { useStore } from '../lib/store'
 import { supabase } from '../lib/supabase'
 
@@ -24,7 +24,7 @@ export function Settings(){
     finally{setWorking(false)}
   }
   async function logout(){
-    if(supabase){const {error}=await supabase.auth.signOut();if(error)alert(error.message)}
+    if(supabase){const {error}=await supabase.auth.signOut();if(error)setError(error.message)}
   }
   return <>
     <PageHeading eyebrow="ADMINISTRAÇÃO" title="Configurações" subtitle="Personalize os dados do estabelecimento e os documentos."/>
@@ -68,11 +68,10 @@ export function Settings(){
           <div className="detail-line"><span>Versão</span><strong>0.1.0</strong></div>
           <div className="detail-line"><span>Veículos 3D</span><strong><a href="https://github.com/pedrosoandre/carros" target="_blank" rel="noreferrer" style={{color:'#1565d8'}}>Catálogo independente</a></strong></div>
           <p className="small-note" style={{marginTop:18}}>Os veículos tridimensionais são de autores independentes, sob licenças Creative Commons. Os créditos aparecem em cada visualização de veículo.</p>
-          {isDemo&&<div className="error-text" style={{background:'#f4f8fe',borderColor:'#dceafb',color:'#5d7696'}}>
-            Esta é uma prévia com dados fictícios. Para usar com clientes reais, execute o arquivo supabase/schema.sql em um projeto Supabase e configure as variáveis VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY.
-          </div>}
+          {isDemo&&<AttentionNotice>Esta é uma prévia sem banco conectado. Alterações são temporárias; conecte o banco antes de cadastrar clientes reais.</AttentionNotice>}
         </Panel>
       </div>
     </div>
   </>
 }
+

@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ArrowUpRight, CarFront, Check, CheckCircle2, ChevronRight, Clock3, Download, Eye, FileText, Minus, Plus, Search, Sparkles, UserRound, X } from 'lucide-react'
 import { Modal } from '../components/Modal'
-import { Avatar, Button, Empty, ErrorText, Field, Input, PageHeading, Panel, Textarea } from '../components/UI'
+import { AttentionNotice, Avatar, Button, Empty, ErrorText, Field, Input, PageHeading, Panel, Textarea } from '../components/UI'
 import { ClientVehiclePicker, QuoteStatusBadge, QuoteStatusPicker, VehicleIdentity } from '../components/commerce/CommerceControls'
 import { QuotePreview, type QuoteDocumentData } from '../components/commerce/QuotePreview'
 import { useStore } from '../lib/store'
@@ -110,7 +110,7 @@ function QuoteEditor({seed,onClose,onSaved,onPreview}:{seed:Seed;onClose:()=>voi
                 <div className="cx-line-total"><span className="cx-field-label">Total do item</span><strong>{money(Number.isFinite(amount)?amount:0)}</strong></div>
               </div>}
             </div>})}
-            {!shown.length&&<div className="cx-inline-empty"><Sparkles size={23}/><span>{services.length?'Nenhum serviço corresponde à busca.':'Cadastre serviços ativos antes de criar a proposta.'}</span>{!services.length&&<Link to="/servicos">Ir para serviços <ChevronRight size={13}/></Link>}</div>}
+            {!shown.length&&(services.length?<div className="cx-inline-empty"><Sparkles size={23}/><span>Nenhum serviço corresponde à busca.</span></div>:<AttentionNotice>Cadastre serviços ativos antes de criar a proposta. <Link to="/servicos">Ir para serviços <ChevronRight size={13}/></Link></AttentionNotice>)}
           </div>
         </section>
         <section className="cx-form-section"><div className="cx-section-heading"><span className="cx-step">03</span><div><h3>Os últimos detalhes</h3><p>Finalize os ajustes e confira a proposta.</p></div></div>
@@ -190,3 +190,4 @@ export function Quotes(){
     {preview&&<QuotePreview document={preview} onClose={closePreview}/>}
   </div>
 }
+

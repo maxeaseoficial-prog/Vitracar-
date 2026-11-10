@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase'
 import { date } from '../lib/utils'
 import { preloadRoute, warmNavigation } from '../lib/page-loaders'
 import './sidebar-brand.css'
+import { ErrorText } from './UI'
 
 const menus=[
   {to:'/',label:'Dashboard',icon:LayoutDashboard},
@@ -24,12 +25,12 @@ export function Layout(){
   useEffect(()=>warmNavigation(window.location.pathname),[])
   const navigate=useNavigate()
   const current=pathname==='/configuracoes'?{label:'Configurações'}:menus.find(m=>m.to===pathname)||menus[0]
-  const [leaving,setLeaving]=useState(false)
+  const [leaving,setLeaving]=useState(false),[logoutError,setLogoutError]=useState<string|null>(null)
   async function logout(){
     if(!supabase||leaving)return
-    setLeaving(true)
+    setLeaving(true);setLogoutError(null)
     const {error}=await supabase.auth.signOut()
-    if(error){setLeaving(false);window.alert(error.message)}
+    if(error){setLeaving(false);setLogoutError(error.message)}
   }
   return <div className="app-shell">
     {open&&<div className="mobile-overlay" onClick={()=>setOpen(false)}/>}
@@ -66,8 +67,9 @@ export function Layout(){
             aria-label="Sair da conta" title="Sair da conta"><LogOut size={18}/></button>}
         </div>
       </header>
-      <main className="content-container"><Outlet/></main>
+      <main className="content-container"><ErrorText message={logoutError}/><Outlet/></main>
       <footer className="app-footer"><span>VitraCar © {new Date().getFullYear()}</span><span>Gestão automotiva com elegância.</span></footer>
     </div>
   </div>
 }
+

@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import type { User } from '@supabase/supabase-js'
 import type { Profile } from './types'
 import { Layout } from './components/Layout'
-import { Loading } from './components/UI'
+import { ErrorText, Loading } from './components/UI'
 import { isConfigured, supabase } from './lib/supabase'
 import { demoCompany, demoProfile } from './lib/demo'
 import { DataProvider, useStore } from './lib/store'
@@ -31,7 +31,7 @@ class AppErrorBoundary extends Component<{children:ReactNode},{error:Error|null}
     if(!this.state.error)return this.props.children
     return <div style={{maxWidth:600,margin:'10vh auto',padding:20}}>
       <h2>Algo deu errado nesta tela</h2>
-      <p className="muted">{this.state.error.message}</p>
+      <ErrorText message={this.state.error.message}/>
       <button className="btn btn-primary" onClick={()=>{this.setState({error:null});window.location.assign('/')}}>Voltar ao início</button>
     </div>
   }
@@ -42,7 +42,7 @@ function InnerRoutes(){
   const {loading,error,refresh,profile}=useStore()
   if(loading)return <div className="app-shell"><div style={{margin:'auto'}}><Loading label="Carregando sua VitraCar..."/></div></div>
   if(error)return <div style={{maxWidth:600,margin:'10vh auto',padding:20}}>
-    <h2>Não foi possível carregar os dados</h2><p className="muted">{error}</p>
+    <h2>Não foi possível carregar os dados</h2><ErrorText message={error}/>
     <button className="btn btn-primary" onClick={()=>void refresh()}>Tentar novamente</button>
   </div>
   return <Routes><Route element={<Layout/>}>
@@ -114,7 +114,7 @@ function LiveApp(){
   useEffect(()=>{void loadProfile()},[loadProfile,profileRevision])
   if(user===undefined||profileLoading)return <Loading label="Verificando acesso..."/>
   if(error)return <div className="auth-side"><div className="auth-form"><h2>Erro de autenticação</h2>
-    <p>{error}</p><button className="btn btn-secondary" onClick={()=>void loadProfile()}>Tentar novamente</button></div></div>
+    <ErrorText message={error}/><button className="btn btn-secondary" onClick={()=>void loadProfile()}>Tentar novamente</button></div></div>
   if(!user)return <Login/>
   // Never render an old account's data during a switch, even before the effect runs.
   if(profileFor!==user.id)return <Loading label="Verificando acesso..."/>
@@ -127,3 +127,4 @@ export function App(){
     ?<DataProvider companyId={demoCompany.id} profile={demoProfile} demo={true}><InnerRoutes/></DataProvider>
     :<LiveApp/>}</AppErrorBoundary>
 }
+

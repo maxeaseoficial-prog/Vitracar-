@@ -4,6 +4,8 @@ import type { Client } from '../types'
 import { supabase } from '../lib/supabase'
 import { statusLabel } from '../lib/utils'
 import { avatarUri, genderOf } from '../lib/avatar'
+import { AttentionNotice } from './AttentionNotice'
+export { AttentionNotice } from './AttentionNotice'
 
 export function Button({variant='primary',size='normal',className='',children,...props}:ButtonHTMLAttributes<HTMLButtonElement>&{
   variant?:'primary'|'secondary'|'ghost'|'danger';size?:'normal'|'small';children:ReactNode
@@ -52,7 +54,7 @@ export function Loading({label='Carregando dados...'}:{label?:string}){
   return <div className="loading"><LoaderCircle className="spin" size={20}/>{label}</div>
 }
 export function TableWrap({children}:{children:ReactNode}){return <div className="table-scroll"><table className="data-table">{children}</table></div>}
-export function ErrorText({message}:{message:string|null}){return message?<div className="error-text" role="alert">{message}</div>:null}
+export function ErrorText({message,id}:{message:string|null;id?:string}){return message?<AttentionNotice id={id} urgent className="error-text">{message}</AttentionNotice>:null}
 export function LinkAction({onClick,children}:{onClick:()=>void;children:ReactNode}){
   return <button className="text-action" onClick={onClick}>{children}<ArrowRight size={15}/></button>
 }
@@ -73,3 +75,4 @@ export function Avatar({client,size='medium'}:{client:Pick<Client,'id'|'name'|'a
     <img src={url||avatarUri(client.avatar_kind)} alt={url?`Foto de ${client.name}`:`Personagem de ${client.name}`}/>
   </div>
 }
+

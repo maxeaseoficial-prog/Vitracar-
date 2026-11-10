@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, CarFront, ChevronLeft, ChevronRight, Search, SlidersHorizontal } from 'lucide-react'
 import type { CatalogCar } from '../../lib/catalog'
 import { categories, getModelThumbnailUrl } from '../../lib/catalog'
+import { AttentionNotice } from '../UI'
 import { escapeSearch } from '../../lib/utils'
 
 const PAGE_SIZE = 8
@@ -87,8 +88,7 @@ export function VehiclePicker({cars,selectedId,loading,error,onSelect,onRetry}:P
       </label>
     </div>
     {loading?<div className="v-pick-message"><CarFront size={26}/><strong>Carregando catálogo de veículos...</strong><small>Preparando a lista de modelos 3D.</small></div>:
-      error?<div className="v-pick-message"><CarFront size={26}/><strong>Não foi possível carregar o catálogo</strong>
-        <small>{error}</small><button type="button" className="btn btn-secondary btn-small" onClick={onRetry}>Tentar novamente</button></div>:
+      error?<AttentionNotice urgent><strong>Não foi possível carregar o catálogo</strong><p>{error}</p><button type="button" className="btn btn-secondary btn-small" onClick={onRetry}>Tentar novamente</button></AttentionNotice>:
       filtered.length===0?<div className="v-pick-message"><Search size={25}/><strong>Nenhum modelo encontrado</strong>
         <small>Experimente outra marca ou nome. Também é possível cadastrar um veículo sem 3D.</small></div>:
       <>
@@ -118,3 +118,4 @@ export function VehiclePicker({cars,selectedId,loading,error,onSelect,onRetry}:P
       </>}
   </section>
 }
+

@@ -1,6 +1,7 @@
 import { useState, type DragEvent, type PointerEvent } from 'react'
 import { ArrowLeft, ArrowRight, CalendarCheck2, CarFront, Check, Clock3, Droplets, GripVertical, KeyRound, LoaderCircle, Sparkles, WalletCards } from 'lucide-react'
 import { Avatar } from '../UI'
+import { AppointmentContact } from './AppointmentContact'
 import { formatPlate, money } from '../../lib/utils'
 import { STAGES, STAGE_LABELS, dateLabel, dayInZone, timeInZone, type WashJob, type WashStage } from '../../lib/wash-flow'
 export const STAGE_ICONS={scheduled:CalendarCheck2,washing:Droplets,finished:Sparkles,delivered:KeyRound,paid:WalletCards}
@@ -23,6 +24,7 @@ export function WashCard({job,zone,date,busy,dragging,onDetails,onMove,onDragSta
     {when!==date&&<span className="wash-previous-day">{dateLabel(when,{day:'2-digit',month:'short'})} · pendente</span>}
     <div className="wash-card-client">{job.client&&<Avatar client={job.client} size="tiny"/>}<span>{job.client?.name||'Cliente'}</span></div>
     <p className="wash-card-services" title={job.items.map(i=>i.description).join(' · ')}>{job.items.map(i=>i.description).join(' · ')||'Serviço não informado'}</p>
+    <AppointmentContact address={job.appointment.address} phone={job.client?.whatsapp}/>
     <div className="wash-card-value"><strong>{money(job.total)}</strong>{job.settled?<span className="wash-paid-badge"><Check size={11}/>{job.total===0?'Sem cobrança':'Pago'}</span>:job.received>0?<span className="wash-partial-badge">Parcial</span>:null}</div>
     <footer className="wash-card-footer"><button type="button" disabled={busy||!previous} aria-label={previous?`Voltar ${plate} para ${STAGE_LABELS[previous]}`:'Primeira etapa'} title={previous?`Voltar para ${STAGE_LABELS[previous]}`:'Primeira etapa'} onClick={()=>previous&&onMove(previous)}><ArrowLeft size={15}/></button>
       <span>{busy?<><LoaderCircle size={12} className="spin"/> Salvando</>:next?`Próximo: ${STAGE_LABELS[next]}`:'Tudo concluído'}</span>
@@ -30,3 +32,4 @@ export function WashCard({job,zone,date,busy,dragging,onDetails,onMove,onDragSta
     </footer>
   </article>
 }
+
