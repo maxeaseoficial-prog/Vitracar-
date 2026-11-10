@@ -11,6 +11,7 @@ import { useStore } from '../lib/store'
 import { supabase } from '../lib/supabase'
 import { formatPlate, money } from '../lib/utils'
 import { readableError } from '../lib/commerce'
+import { armSound, playMoneySound } from '../lib/sound'
 import { addDays, buildJobs, dateLabel, dayInZone, jobMatches, jobOnDay, safeZone, STAGES, STAGE_HINTS, STAGE_LABELS, suggestedSlot, timeInZone, type WashJob, type WashStage } from '../lib/wash-flow'
 import type { CalendarView } from '../components/agenda/WashCalendar'
 import type { PaymentMethod } from '../types'
@@ -42,6 +43,7 @@ export function Agenda(){
   const cancelled=filtered.filter(j=>j.appointment.status==='cancelled'&&jobOnDay(j,date,zone))
   const shown=daily.map(j=>optimistic?.id===j.appointment.id?{...j,stage:optimistic.stage}:j)
   const detail=jobs.find(j=>j.appointment.id===detailId),payment=jobs.find(j=>j.appointment.id===payId)
+  useEffect(()=>{armSound()},[])
   useEffect(()=>{
     const update=()=>{const next=dayInZone(new Date(),zone);setToday(old=>{if(old!==next&&followsToday.current)setDate(next);return next})}
     update();const timer=window.setInterval(update,30000);document.addEventListener('visibilitychange',update)
@@ -85,6 +87,7 @@ export function Agenda(){
     try{
       if(isDemo){const oid=await completeAppointment(job.appointment.id);if(amount>0)await recordPayment(oid,amount,method);await save('appointments',{workflow_stage:job.received+amount>=job.total?'paid':job.stage==='delivered'?'delivered':'finished',workflow_version:(job.appointment.workflow_version||0)+1},job.appointment.id)}
       else{if(!supabase)throw new Error('Conexão indisponível.');const result=await supabase.rpc('pay_wash_appointment',{p_appointment_id:job.appointment.id,p_amount_cents:amount,p_method:method,p_expected_version:job.appointment.workflow_version||0});if(result.error)throw result.error;await refresh()}
+      if(amount>0)playMoneySound()
       setNotice(job.received+amount>=job.total?'Atendimento quitado e movido para Pago.':'Recebimento parcial registrado. O saldo continua pendente.')
     }catch(cause){await refresh();throw cause}finally{setBusy(null);operation.current=false}
   }
