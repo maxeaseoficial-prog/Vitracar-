@@ -38,7 +38,7 @@ export function Layout(){
     {open&&<div className="mobile-overlay" onClick={()=>setOpen(false)}/>}
     <aside className={`sidebar ${open?'sidebar-open':''}`}>
       <div className="sidebar-logo sidebar-logo-official">
-        <img src="/vitracar-logo-white.png" alt="VitraCar" className="sidebar-brand-image"
+        <img src="/logo-lavoo-white.png" alt="Lavoo" className="sidebar-brand-image"
           loading="eager" decoding="async"/>
         <button className="sidebar-close" onClick={()=>setOpen(false)} aria-label="Fechar menu"><X size={20}/></button>
       </div>
