@@ -37,16 +37,16 @@ await test('password confirmation required server-side',async()=>{const t=setup(
 await test('untrusted origin blocked',async()=>{const t=setup();assert.equal((await t.run(valid,{Origin:'https://untrusted.invalid'})).status,403);assert.equal(t.calls.length,0)})
 await test('missing app key blocked',async()=>{const t=setup();assert.equal((await t.run(valid,{apikey:''})).status,401);assert.equal(t.calls.length,0)})
 await test('new registration confirms only its newly created user and returns native session',async()=>{
- const t=setup({grant:[{status:400,data:{code:'invalid_credentials'}},{status:200,data:nativeSession}]})
+ const t=setup()
  const res=await t.run();assert.equal(res.status,200);assert.equal(res.headers.get('Cache-Control'),'no-store')
  assert.deepEqual(await res.json(),{session:nativeSession});const created=t.calls.find(x=>x.url.endsWith('/admin/users'))
  assert.equal(created.body.email_confirm,true);assert.equal(created.body.password,valid.password);assert.ok(!('role' in created.body))
 })
 await test('existing correct password returns session without account mutation',async()=>{
- const t=setup();assert.equal((await t.run()).status,200);assert.ok(t.calls.every(x=>!x.url.includes('/admin/')&&!x.url.includes('pending_user')))
+ const t=setup();assert.equal((await t.run({...valid,action:'finish-pending'})).status,200);assert.ok(t.calls.every(x=>!x.url.includes('/admin/')&&!x.url.includes('pending_user')))
 })
 await test('duplicate email with wrong password is not replaced or confirmed',async()=>{
- const t=setup({grant:[{status:400,data:{code:'invalid_credentials'}}],adminStatus:422});assert.equal((await t.run()).status,400)
+ const t=setup({adminStatus:422});const res=await t.run();assert.equal(res.status,409);assert.equal((await res.json()).code,'email_exists');assert.ok(!t.calls.some(x=>x.url.includes('/token?')))
  assert.ok(t.calls.every(x=>x.method!=='PUT'));assert.ok(t.calls.every(x=>!x.url.includes('pending_user')))
 })
 await test('pending account needs Auth-validated password before confirmation',async()=>{
@@ -60,8 +60,22 @@ await test('wrong password cannot finish pending registration',async()=>{
  assert.ok(t.calls.every(x=>!x.url.includes('/admin/')&&!x.url.includes('pending_user')))
 })
 await test('rate limit rejects before any password grant',async()=>{const t=setup({limit:false});const res=await t.run();assert.equal(res.status,429);assert.equal(res.headers.get('Retry-After'),'900');assert.equal(t.calls.length,1)})
-await test('lookup failure cannot confirm any account',async()=>{const t=setup({grant:[{status:400,data:{code:'email_not_confirmed'}}],lookupStatus:403});assert.equal((await t.run()).status,400);assert.ok(t.calls.every(x=>!x.url.includes('/admin/')))})
+await test('lookup failure cannot confirm any account',async()=>{const t=setup({grant:[{status:400,data:{code:'email_not_confirmed'}}],lookupStatus:403});assert.equal((await t.run({...valid,action:'finish-pending'})).status,400);assert.ok(t.calls.every(x=>!x.url.includes('/admin/')))})
 await test('upstream failure is sanitized',async()=>{const t=setup({throwFetch:true});const res=await t.run();assert.equal(res.status,503);assert.ok(!(await res.text()).includes('must not disclose'))})
 await test('oversized request is rejected',async()=>{const t=setup();assert.equal((await t.run({...valid,padding:'x'.repeat(5000)})).status,400);assert.equal(t.calls.length,0)})
 await test('preflight succeeds without creating anything',async()=>{const t=setup();const res=await t.handler(new Request('https://function-test.invalid/',{method:'OPTIONS',headers:{Origin:origin}}));assert.equal(res.status,204);assert.equal(res.headers.get('Access-Control-Allow-Origin'),origin);assert.equal(t.calls.length,0)})
+await test('duplicate registration with correct password never logs in or activates',async()=>{
+ const t=setup({adminStatus:422,grant:[{status:200,data:nativeSession}]});const res=await t.run();assert.equal(res.status,409)
+ assert.match((await res.json()).message,/Este e-mail já está cadastrado/)
+ assert.ok(!t.calls.some(x=>x.url.includes('/token?')||x.method==='PUT'||x.url.includes('pending_user')))
+})
+await test('native login outage is not misreported as wrong password',async()=>{
+ const t=setup({grant:[{status:503,data:{}}]});assert.equal((await t.run({...valid,action:'finish-pending'})).status,503)
+ assert.ok(!t.calls.some(x=>x.url.includes('/admin/')))
+})
+await test('new signup session failure reports that the account was created',async()=>{
+ const t=setup({grant:[{status:503,data:{}}]});const res=await t.run();assert.equal(res.status,503)
+ assert.equal((await res.json()).code,'session_unavailable')
+})
 console.log(`${count} mocked server checks passed; no real accounts used.`)
+

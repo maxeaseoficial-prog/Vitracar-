@@ -52,7 +52,7 @@ Deno.serve(async (req: Request) => {
   const origin = req.headers.get('origin');
   const h = headers(origin);
   const reply = (status:number,body:unknown) => new Response(JSON.stringify(body),{status,headers:h});
-  const invalid = () => reply(400,{code:'invalid_credentials',message:'Não foi possível acessar com esse e-mail e senha. Se você já se cadastrou, use a senha original em Fazer login.'});
+  const invalid = () => reply(400,{code:'invalid_credentials',message:'E-mail ou senha incorretos. Confira os dados para entrar.'});
   if (origin && !origins.has(origin)) return reply(403,{message:'Origem não autorizada.'});
   if (req.method === 'OPTIONS') return new Response(null,{status:204,headers:h});
   if (req.method !== 'POST') return reply(405,{message:'Método não permitido.'});
@@ -73,23 +73,34 @@ Deno.serve(async (req: Request) => {
     const limit = await call('/rest/v1/rpc/vitracar_take_auth_attempt',{p_fingerprint:await fingerprint(email)},true);
     if (!limit.ok) return reply(503,{message:'Cadastro indisponível. Tente novamente em instantes.'});
     if (limit.data !== true) { h['Retry-After']='900'; return reply(429,{message:'Muitas tentativas. Aguarde 15 minutos antes de tentar novamente.'}); }
+    // Registration must not log into, confirm, overwrite or reset an existing account.
+    // Native Admin create is atomic and returns email_exists for a duplicate.
+    if (action === 'signup') {
+      const created = await call('/auth/v1/admin/users',{email,password,email_confirm:true},true);
+      if (!created.ok) {
+        if (['email_exists','email_already_registered','user_already_exists'].includes(String(codeOf(created)))) {
+          return reply(409,{code:'email_exists',message:'Este e-mail já está cadastrado. Faça login para acessar sua conta.'});
+        }
+        if (created.status === 429) return reply(429,{message:'Muitas tentativas. Aguarde alguns minutos.'});
+        if (codeOf(created) === 'weak_password') return reply(400,{code:'weak_password',message:'A senha não atende aos requisitos de segurança.'});
+        return reply(created.status >= 500 ? 503 : 400,{code:'signup_failed',message:'Não foi possível criar a conta. Confira os dados e tente novamente.'});
+      }
+      const session = await call('/auth/v1/token?grant_type=password',{email,password});
+      if (!hasSession(session)) return reply(503,{code:'session_unavailable',message:'Sua conta foi criada, mas não foi possível iniciar a sessão. Use Fazer login com a senha cadastrada.'});
+      return reply(200,{session:{access_token:session.data.access_token,refresh_token:session.data.refresh_token}});
+    }
+
+    // This branch is only used to finish a pending LOGIN, never to re-register.
     let session = await call('/auth/v1/token?grant_type=password',{email,password});
     if (session.status === 429) return reply(429,{message:'Muitas tentativas. Aguarde alguns minutos.'});
+    if (session.status >= 500) return reply(503,{message:'Serviço de acesso indisponível. Tente novamente em instantes.'});
     if (!hasSession(session) && codeOf(session) === 'email_not_confirmed') {
-      // GoTrue checks the password BEFORE returning email_not_confirmed.
-      // Never activate by email alone, change a password, or trust a client-supplied user ID.
+      // Supabase Auth checks the password before returning email_not_confirmed.
+      // Incorrect passwords NEVER reach the administrative confirmation.
       const lookup = await call('/rest/v1/rpc/vitracar_pending_user_id',{p_email:email},true);
       if (!lookup.ok || typeof lookup.data !== 'string' || !/^[0-9a-f-]{36}$/i.test(lookup.data)) return invalid();
       const activate = await call('/auth/v1/admin/users/' + lookup.data,{email_confirm:true},true,'PUT');
       if (!activate.ok) return reply(503,{message:'Não foi possível liberar o acesso. Tente novamente.'});
-      session = await call('/auth/v1/token?grant_type=password',{email,password});
-    } else if (!hasSession(session) && action === 'signup' && codeOf(session) === 'invalid_credentials') {
-      const created = await call('/auth/v1/admin/users',{email,password,email_confirm:true},true);
-      if (!created.ok) {
-        if (created.status >= 500) return reply(503,{message:'Cadastro indisponível. Tente novamente.'});
-        if (codeOf(created) === 'weak_password') return reply(400,{code:'weak_password',message:'A senha não atende aos requisitos de segurança.'});
-        return invalid();
-      }
       session = await call('/auth/v1/token?grant_type=password',{email,password});
     }
     if (!hasSession(session)) return invalid();
