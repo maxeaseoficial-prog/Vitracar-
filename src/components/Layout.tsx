@@ -5,6 +5,7 @@ import { CalendarDays, CarFront, ChevronRight, CircleDollarSign, Coins, FileText
 import { useStore } from '../lib/store'
 import { supabase } from '../lib/supabase'
 import { date } from '../lib/utils'
+import './sidebar-brand.css'
 
 const menus=[
   {to:'/',label:'Dashboard',icon:LayoutDashboard},
@@ -31,9 +32,9 @@ export function Layout(){
   return <div className="app-shell">
     {open&&<div className="mobile-overlay" onClick={()=>setOpen(false)}/>}
     <aside className={`sidebar ${open?'sidebar-open':''}`}>
-      <div className="sidebar-logo">
-        <div className="brand-symbol"><CarFront size={22} strokeWidth={2.3}/></div>
-        <div className="brand-wordmark">VITRA<span>CAR</span><small>GESTÃO AUTOMOTIVA</small></div>
+      <div className="sidebar-logo sidebar-logo-official">
+        <img src="/vitracar-logo-white.png" alt="VitraCar" className="sidebar-brand-image"
+          loading="eager" decoding="async"/>
         <button className="sidebar-close" onClick={()=>setOpen(false)} aria-label="Fechar menu"><X size={20}/></button>
       </div>
       <div className="menu-caption">WORKSPACE</div>
