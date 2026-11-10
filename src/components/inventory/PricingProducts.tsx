@@ -1,0 +1,27 @@
+import {useState} from 'react'
+import {Boxes,Droplets,Plus,RefreshCw,Trash2} from 'lucide-react'
+import {AttentionNotice,Button,Field,Input,Select} from '../UI'
+import {InventoryPicker} from './InventoryPicker'
+import {ProductPhoto} from './ProductPhoto'
+import {useInventory} from '../../lib/inventory-store'
+import {inventoryCostProduct,packageLabel,type InventoryProduct} from '../../lib/inventory'
+import {money,uuid} from '../../lib/utils'
+import type {ProductCost,ProductUnit,PricingResult} from '../../lib/service-pricing'
+import './inventory.css'
+const presets=['Shampoo automotivo','APC / limpador multiuso','Desengraxante','Limpa-vidros','Pretinho / renovador de pneus','Cera','Selante','Higienizador de estofados','Removedor de ferro','Outro produto']
+const baseUnit=(unit:ProductUnit)=>unit==='l'||unit==='ml'?'ml':unit==='kg'||unit==='g'?'g':'un'
+function NumberField({label,value,onChange,disabled=false,hint}:{label:string;value:string;onChange:(v:string)=>void;disabled?:boolean;hint?:string}){return <Field label={label} hint={hint}><Input aria-label={label} inputMode='decimal' value={value} onChange={e=>onChange(e.target.value)} disabled={disabled}/></Field>}
+export function PricingProducts({products,onChange,result}:{products:ProductCost[];onChange:(rows:ProductCost[])=>void;result:PricingResult}){
+ const inventory=useInventory(),[open,setOpen]=useState(false)
+ const patch=(id:string,part:Partial<ProductCost>)=>onChange(products.map(p=>p.id===id?{...p,...part}:p))
+ function add(name=''){onChange([...products,{id:uuid(),name:name==='Outro produto'?'':name,unit:'l',pack:'',price:'',use:'',diluted:false,waterParts:''}])}
+ function choose(product:InventoryProduct){onChange([...products,inventoryCostProduct(product,uuid())]);setOpen(false)}
+ return <><div className='pc-product-add'><Button onClick={()=>setOpen(true)}><Boxes size={16}/>Selecionar do estoque</Button><Select aria-label='Adicionar produto comum' value='' onChange={e=>{if(e.target.value)add(e.target.value)}}><option value=''>Adicionar produto manualmente...</option>{presets.map(p=><option key={p}>{p}</option>)}</Select><Button variant='secondary' onClick={()=>add()}><Plus size={15}/>Produto</Button></div>
+ <p className='inv-help'>O estoque preenche nome, custo de compra e embalagem. Informe o consumo e a diluição. A simulação não dá baixa no saldo e não altera o cadastro do produto.</p>
+ {!products.length&&<div className='pc-empty'><Droplets size={24}/><p>Shampoo, APC, cera, limpa-vidros… selecione do estoque ou preencha manualmente.</p></div>}
+ {products.map((p,i)=>{const source=inventory.products.find(s=>s.id===p.inventoryId),linked=Boolean(p.inventoryId);return <article className='pc-item' key={p.id}><header><strong>Produto {i+1}</strong><button type='button' className='pc-remove' aria-label={`Remover produto ${i+1}`} onClick={()=>onChange(products.filter(x=>x.id!==p.id))}><Trash2 size={16}/></button></header>
+ {source&&<div className='inv-product-origin'><ProductPhoto product={source}/><span>Do estoque · {packageLabel(source)}<br/>Custo de compra: {money(source.cost_cents)}</span><button type='button' onClick={()=>{const latest=inventoryCostProduct(source,p.id);patch(p.id,{name:latest.name,price:latest.price,pack:latest.pack,unit:latest.unit})}} title='Usar o custo atual do cadastro'><RefreshCw size={13}/>Atualizar dados</button></div>}{linked&&!source&&!inventory.loading&&<AttentionNotice>O cadastro deste produto não está disponível. Esta simulação usa os dados copiados na seleção; remova o item e selecione novamente para conferir.</AttentionNotice>}
+ <div className='pc-grid'><Field label='Produto'><Input aria-label={`Produto ${i+1}`} value={p.name} maxLength={160} disabled={linked} onChange={e=>patch(p.id,{name:e.target.value})}/></Field><Field label='Unidade da embalagem'><Select aria-label={`Unidade do produto ${i+1}`} value={p.unit} disabled={linked} onChange={e=>patch(p.id,{unit:e.target.value as ProductUnit,diluted:['l','ml'].includes(e.target.value)?p.diluted:false})}><option value='l'>Litros (L)</option><option value='ml'>Mililitros (ml)</option><option value='kg'>Quilos (kg)</option><option value='g'>Gramas (g)</option><option value='un'>Unidades</option></Select></Field><NumberField label={`Quantidade da embalagem ${i+1} (${p.unit})`} value={p.pack} disabled={linked} onChange={v=>patch(p.id,{pack:v})}/><NumberField label={`Preço da embalagem ${i+1} (R$)`} value={p.price} disabled={linked} onChange={v=>patch(p.id,{price:v})}/><NumberField label={`Consumo ${p.diluted?'da mistura':'do produto'} ${i+1} (${baseUnit(p.unit)})`} value={p.use} onChange={v=>patch(p.id,{use:v})}/>{p.diluted&&<NumberField label={`Partes de água para 1 de produto ${i+1}`} value={p.waterParts} onChange={v=>patch(p.id,{waterParts:v})} hint='1:10 = 1 de produto + 10 de água (11 partes totais).'/ >}</div>
+ {['l','ml'].includes(p.unit)&&<label className='pc-check'><input type='checkbox' checked={p.diluted} onChange={e=>patch(p.id,{diluted:e.target.checked})}/>Uso diluído — informar volume da mistura pronta</label>}<footer><small>{p.diluted?`${(result.concentrate[i]||0).toLocaleString('pt-BR',{maximumFractionDigits:2})} ml de concentrado por serviço`:'Custo proporcional à quantidade consumida'}</small><strong>{money(Math.round((result.productCosts[i]||0)*100))}</strong></footer></article>})}
+ {open&&<InventoryPicker selected={products.map(p=>p.inventoryId||'')} onChoose={choose} onClose={()=>setOpen(false)}/>}</>
+}
