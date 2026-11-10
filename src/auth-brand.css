@@ -4,10 +4,30 @@
   color: #ffffff;
 }
 
-.auth-shell .auth-brand::before,
+.auth-shell .auth-brand::before {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 330px;
+  height: 330px;
+  border-radius: 50%;
+  right: -170px;
+  bottom: -150px;
+  background: radial-gradient(circle, #B9FC0128 0%, #B9FC0100 68%);
+  pointer-events: none;
+}
 .auth-shell .auth-brand::after {
-  content: none;
-  display: none;
+  content: "";
+  display: block;
+  position: absolute;
+  left: 7.5%;
+  top: 35%;
+  width: 54px;
+  height: 4px;
+  border-radius: 999px;
+  background: #B9FC01;
+  box-shadow: 0 0 24px #B9FC0140;
+  pointer-events: none;
 }
 
 .auth-shell .auth-brand .auth-logo {
@@ -30,10 +50,62 @@
 }
 
 .auth-shell .auth-brand .auth-hero h1,
-.auth-shell .auth-brand .auth-hero h1 span,
 .auth-shell .auth-brand .auth-hero p,
 .auth-shell .auth-brand .auth-foot {
   color: #ffffff;
+}
+.auth-shell .auth-brand .auth-hero h1 span {
+  color: #B9FC01;
+}
+.auth-shell .auth-brand .auth-foot::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: #B9FC01;
+  vertical-align: 1px;
+}
+
+/* Acentos verdes na área de acesso */
+.auth-shell .auth-side .auth-form {
+  position: relative;
+  overflow: hidden;
+}
+.auth-shell .auth-side .auth-form::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: #B9FC01;
+}
+.auth-shell .auth-side .auth-form > .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  color: #0B0D12;
+}
+.auth-shell .auth-side .auth-form > .eyebrow svg {
+  color: #6F9400;
+}
+.auth-shell .auth-side .form-input:focus {
+  border-color: #B9FC01;
+  box-shadow: 0 0 0 4px #B9FC0126;
+}
+.auth-shell .auth-side .btn-primary {
+  background: #B9FC01;
+  color: #0B0D12;
+  box-shadow: 0 10px 24px #B9FC012E;
+}
+.auth-shell .auth-side .btn-primary:hover:not(:disabled) {
+  background: #A8E600;
+}
+.auth-shell .auth-switch button {
+  color: #0B0D12;
+  text-decoration: underline;
+  text-decoration-color: #B9FC01;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
 }
 
 @media (max-width: 640px) {
