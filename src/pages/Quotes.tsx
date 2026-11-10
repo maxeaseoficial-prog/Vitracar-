@@ -5,7 +5,6 @@ import { Modal } from '../components/Modal'
 import { Avatar, Button, Empty, ErrorText, Field, Input, PageHeading, Panel, Textarea } from '../components/UI'
 import { ClientVehiclePicker, QuoteStatusBadge, QuoteStatusPicker, VehicleIdentity } from '../components/commerce/CommerceControls'
 import { QuotePreview, type QuoteDocumentData } from '../components/commerce/QuotePreview'
-import { downloadQuotePDF } from '../lib/pdf'
 import { useStore } from '../lib/store'
 import { centsToPrice, date, escapeSearch, formatPhone, formatQuoteNumber, money, priceToCents } from '../lib/utils'
 import { durationLabel, QUOTE_STATUSES, quoteTotal, readableError } from '../lib/commerce'
@@ -153,7 +152,7 @@ export function Quotes(){
   function showPreview(q:Quote){setError(null);try{setPreview(documentFor(q))}catch(cause){setError(readableError(cause))}}
   async function download(q:Quote){
     if(busyPdf)return;setBusyPdf(q.id);setError(null)
-    try{const d=documentFor(q);await downloadQuotePDF(d.quote,d.items,d.client,d.vehicle,d.company)}catch(cause){setError(readableError(cause))}finally{setBusyPdf(null)}
+    try{const d=documentFor(q);const {downloadQuotePDF}=await import('../lib/pdf');await downloadQuotePDF(d.quote,d.items,d.client,d.vehicle,d.company)}catch(cause){setError(readableError(cause))}finally{setBusyPdf(null)}
   }
   async function changeStatus(q:Quote,status:StatusQuote){
     if(busyStatus||status===q.status)return;setBusyStatus(q.id);setError(null)

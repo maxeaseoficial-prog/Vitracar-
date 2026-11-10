@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Activity, ArrowDownRight, ArrowUpRight, Banknote, CalendarDays, CarFront, ChevronRight,
   CircleDollarSign, Coins, CreditCard, Users } from 'lucide-react'
-import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { Empty, PageHeading, Panel, Status } from '../components/UI'
+import { Empty, Loading, PageHeading, Panel, Status } from '../components/UI'
 import { useStore } from '../lib/store'
 import { dateTime, money, sum } from '../lib/utils'
+
+const FinancialChart=lazy(()=>import('../components/FinancialChart').then(m=>({default:m.FinancialChart})))
 
 type Period=7|30|90
 function inRange(value:string,days:number){return new Date(value).getTime()>=Date.now()-days*86400000}
@@ -52,19 +53,7 @@ export function Dashboard(){
     </div>)}</div>
     <div className="dashboard-grid">
       <Panel title="Evolução financeira" action={<span className="tag">Últimos {period} dias</span>}>
-        <div className="chart-container"><ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chart} margin={{top:10,right:12,left:-18,bottom:0}}>
-            <defs><linearGradient id="blueArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#0131cd" stopOpacity={.18}/><stop offset="100%" stopColor="#0131cd" stopOpacity={0}/></linearGradient></defs>
-            <CartesianGrid stroke="#eef0f3" strokeDasharray="3 5" vertical={false}/>
-            <XAxis dataKey="name" tick={{fill:'#9ca3af',fontSize:10}} axisLine={false} tickLine={false} dy={9}/>
-            <YAxis tick={{fill:'#9ca3af',fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`R$${Math.round(Number(v)/100)}`} width={55}/>
-            <Tooltip formatter={(v,name)=>[money(Number(v)),name==='income'?'Recebimentos':'Despesas']}
-              contentStyle={{borderRadius:12,border:'1px solid #e7edf5',boxShadow:'0 8px 26px #13274210',fontSize:11}}/>
-            <Legend verticalAlign="bottom" height={22} formatter={v=>v==='income'?'Recebimentos':'Despesas'} wrapperStyle={{fontSize:10,paddingTop:14}}/>
-            <Area type="monotone" dataKey="income" stroke="#0131cd" strokeWidth={2.5} fill="url(#blueArea)" dot={false}/>
-            <Area type="monotone" dataKey="cost" stroke="#0b0d12" strokeWidth={2} strokeDasharray="5 5" fill="transparent" dot={false}/>
-          </AreaChart>
-        </ResponsiveContainer></div>
+        <div className="chart-container"><Suspense fallback={<Loading label="Carregando gráfico..."/>}><FinancialChart chart={chart}/></Suspense></div>
       </Panel>
       <Panel title="Próximos agendamentos" action={<button className="text-action" onClick={()=>navigate('/agenda')}>Ver agenda <ChevronRight size={14}/></button>}>
         {upcoming.length?upcoming.map(a=>{

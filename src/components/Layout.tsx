@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { CalendarDays, CarFront, ChevronRight, CircleDollarSign, Coins, FileText,
   LayoutDashboard, LogOut, Menu, Settings2, Wrench, X } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { supabase } from '../lib/supabase'
 import { date } from '../lib/utils'
+import { preloadRoute, warmNavigation } from '../lib/page-loaders'
 import './sidebar-brand.css'
 
 const menus=[
@@ -20,6 +21,7 @@ export function Layout(){
   const {company,profile,isDemo}=useStore()
   const [open,setOpen]=useState(false)
   const {pathname}=useLocation()
+  useEffect(()=>warmNavigation(window.location.pathname),[])
   const navigate=useNavigate()
   const current=pathname==='/configuracoes'?{label:'Configurações'}:menus.find(m=>m.to===pathname)||menus[0]
   const [leaving,setLeaving]=useState(false)
@@ -40,6 +42,7 @@ export function Layout(){
       <div className="menu-caption">WORKSPACE</div>
       <nav className="sidebar-nav" aria-label="Menu principal">
         {menus.map(m=><NavLink to={m.to} key={m.to} onClick={()=>setOpen(false)}
+          onMouseEnter={()=>preloadRoute(m.to)} onFocus={()=>preloadRoute(m.to)} onTouchStart={()=>preloadRoute(m.to)}
           end={m.to==='/'} className={({isActive})=>`nav-item ${isActive?'active':''}`}>
           <m.icon size={18} strokeWidth={1.85}/><span>{m.label}</span>{m.label===current.label&&<ChevronRight className="nav-arrow" size={15}/>}
         </NavLink>)}

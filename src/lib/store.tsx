@@ -62,7 +62,7 @@ export function DataProvider({companyId,profile,demo,children}:{
     if(!supabase)throw new Error('Banco indisponível')
     const rows:unknown[]=[]
     for(let from=0;;from+=PAGE){
-      const result=await supabase.from(name).select('*').eq('company_id',companyId).range(from,from+PAGE-1)
+      const result=await supabase.from(name).select('*').eq('company_id',companyId).order('id',{ascending:true}).range(from,from+PAGE-1)
       if(result.error)throw result.error
       rows.push(...(result.data||[]))
       if(!result.data||result.data.length<PAGE)break
@@ -85,10 +85,12 @@ export function DataProvider({companyId,profile,demo,children}:{
     if(demo||!isConfigured||!supabase)return
     setError(null)
     try {
-      const business=await supabase.from('company_settings').select('*').eq('id',companyId).single()
+      const [business]=await Promise.all([
+        supabase.from('company_settings').select('*').eq('id',companyId).single(),
+        reload(names)
+      ])
       if(business.error)throw business.error
       setCompany(business.data as Company)
-      await reload(names)
     } catch(e) {setError(e instanceof Error?e.message:String(e))}
     finally{setLoading(false)}
   },[companyId,demo,reload])

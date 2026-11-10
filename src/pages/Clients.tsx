@@ -3,10 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, CalendarPlus, Camera, ChevronLeft, ChevronRight, CarFront, FilePlus2, History, MessageCircle, Pencil, Phone, Plus, X } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Avatar, Button, CoinCount, Empty, ErrorText, Field, Input, PageHeading, Panel, SearchInput, Select, Status, TableWrap, Textarea } from '../components/UI'
-import { CarViewer } from '../components/CarViewer'
-import { QuickCarViewer } from '../components/vehicle/QuickCarViewer'
+import { CarViewer, QuickCarViewer, VehicleStudioForm } from '../components/vehicle/DeferredVehicle'
 import { categories } from '../lib/catalog'
-import { VehicleStudioForm } from '../components/vehicle/VehicleStudioForm'
 import { useStore } from '../lib/store'
 import { AVATAR_OPTIONS, avatarUri, genderOf } from '../lib/avatar'
 import { date, dateTime, escapeSearch, formatPhone, formatQuoteNumber, whatsappLink, formatPlate, money, number, sum } from '../lib/utils'
@@ -157,8 +155,7 @@ export function ClientProfile(){
         onKeyDown={e=>{if(e.key==='Enter')navigate(`/veiculos/${v.id}`)}}>
         <div className="vehicle-icon"><CarFront size={28}/></div><div><strong>{v.brand} {v.model}</strong>
           <small>{formatPlate(v.plate)} · {v.color}</small></div><span style={{marginLeft:'auto',color:'#97aabc'}}>›</span>
-      </div>)}</div>:<Empty title="Nenhum veículo cadastrado" action={<Button size="small" onClick={()=>setVehicleModal(true)}><Plus size={14}/> Cadastrar veículo</Button>}/>}
-    </Panel>
+      </div>)}</div>:<Empty title="Nenhum veículo cadastrado" action={<Button size="small" onClick={()=>setVehicleModal(true)}><Plus size={14}/> Cadastrar veículo</Button>}/>}</Panel>
     <div className="dashboard-grid" style={{marginTop:19}}>
       <Panel title="Histórico de atendimentos">
         {orders.length?orders.map(o=>{

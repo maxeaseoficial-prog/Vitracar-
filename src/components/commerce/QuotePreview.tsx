@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Download, FileText, LoaderCircle } from 'lucide-react'
 import { Modal } from '../Modal'
 import { Button, ErrorText } from '../UI'
-import { createQuoteDocument } from '../../lib/pdf'
 import { formatQuoteNumber } from '../../lib/utils'
 import { readableError } from '../../lib/commerce'
 import type { Client, Company, Quote, QuoteItem, Vehicle } from '../../types'
@@ -13,7 +12,7 @@ export function QuotePreview({document:doc,onClose}:{document:QuoteDocumentData;
   useEffect(()=>{
     let active=true,objectUrl:string|null=null
     setUrl(null);setError(null)
-    void createQuoteDocument(doc.quote,doc.items,doc.client,doc.vehicle,doc.company).then(pdf=>{
+    void import('../../lib/pdf').then(({createQuoteDocument})=>createQuoteDocument(doc.quote,doc.items,doc.client,doc.vehicle,doc.company)).then(pdf=>{
       if(!active)return
       objectUrl=URL.createObjectURL(pdf.output('blob'));setUrl(objectUrl)
     }).catch(cause=>{if(active)setError(readableError(cause))})
