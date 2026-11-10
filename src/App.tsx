@@ -8,7 +8,7 @@ import { isConfigured, supabase } from './lib/supabase'
 import { demoCompany, demoProfile } from './lib/demo'
 import { DataProvider, useStore } from './lib/store'
 import { Login, Onboarding } from './pages/Login'
-import { loadDashboard, loadClients, loadServices, loadQuotes, loadAgenda, loadFinance, loadLoyalty, loadSettings, preloadRoute } from './lib/page-loaders'
+import { loadDashboard, loadClients, loadServices, loadPriceCalculator, loadQuotes, loadAgenda, loadFinance, loadLoyalty, loadSettings, preloadRoute } from './lib/page-loaders'
 
 // Cada página é baixada só quando aberta: o 3D (Three.js) e o PDF (jsPDF)
 // deixam de pesar na primeira carga.
@@ -17,6 +17,7 @@ const Clients=lazy(()=>loadClients().then(m=>({default:m.Clients})))
 const ClientProfile=lazy(()=>loadClients().then(m=>({default:m.ClientProfile})))
 const VehicleDetail=lazy(()=>loadClients().then(m=>({default:m.VehicleDetail})))
 const Services=lazy(()=>loadServices().then(m=>({default:m.Services})))
+const PriceCalculator=lazy(()=>loadPriceCalculator().then(m=>({default:m.PriceCalculator})))
 const Quotes=lazy(()=>loadQuotes().then(m=>({default:m.Quotes})))
 const Agenda=lazy(()=>loadAgenda().then(m=>({default:m.Agenda})))
 const Finance=lazy(()=>loadFinance().then(m=>({default:m.Finance})))
@@ -51,6 +52,7 @@ function InnerRoutes(){
     <Route path="/clientes/:id" element={page(<ClientProfile/>)}/>
     <Route path="/veiculos/:id" element={page(<VehicleDetail/>)}/>
     <Route path="/servicos" element={page(<Services/>)}/>
+    <Route path="/calcular-preco" element={page(<PriceCalculator/>)}/>
     <Route path="/orcamentos" element={page(<Quotes/>)}/>
     <Route path="/agenda" element={page(<Agenda/>)}/>
     <Route path="/financeiro" element={page(<Finance/>)}/>
@@ -127,4 +129,3 @@ export function App(){
     ?<DataProvider companyId={demoCompany.id} profile={demoProfile} demo={true}><InnerRoutes/></DataProvider>
     :<LiveApp/>}</AppErrorBoundary>
 }
-

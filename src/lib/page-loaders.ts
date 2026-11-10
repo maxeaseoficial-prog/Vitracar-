@@ -6,6 +6,7 @@ function once<T>(load: () => Promise<T>): () => Promise<T> {
 export const loadDashboard = once(() => import('../pages/Dashboard'))
 export const loadClients = once(() => import('../pages/Clients'))
 export const loadServices = once(() => import('../pages/Services'))
+export const loadPriceCalculator = once(() => import('../pages/PriceCalculator'))
 export const loadQuotes = once(() => import('../pages/Quotes'))
 export const loadAgenda = once(() => import('../pages/Agenda'))
 export const loadFinance = once(() => import('../pages/Finance'))
@@ -13,7 +14,7 @@ export const loadLoyalty = once(() => import('../pages/Loyalty'))
 export const loadSettings = once(() => import('../pages/Settings'))
 const routes: Record<string, () => Promise<unknown>> = {
   '/': loadDashboard, '/agenda': loadAgenda, '/clientes': loadClients,
-  '/servicos': loadServices, '/orcamentos': loadQuotes,
+  '/servicos': loadServices, '/calcular-preco': loadPriceCalculator, '/orcamentos': loadQuotes,
   '/financeiro': loadFinance, '/fidelidade': loadLoyalty, '/configuracoes': loadSettings,
 }
 function economicalConnection() {
