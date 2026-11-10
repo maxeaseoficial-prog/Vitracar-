@@ -13,7 +13,7 @@ O login normal é mantido. Somente se o Auth retornar `email_not_confirmed`, a f
 - Chave administrativa apenas no ambiente da Edge Function; não é enviada ao browser, ao repositório ou aos logs.
 - Apenas os tokens de sessão do próprio usuário são devolvidos, com `Cache-Control: no-store`.
 - API key pública da aplicação exigida; o endpoint é de cadastro público, não de sessão previamente autenticada.
-- Origens CORS restritas aos domínios conhecidos da VitraCar.
+- Origens CORS restritas aos domínios do Lavô/VitraCar (lista exata, previews da equipe e secret opcional `ALLOWED_ORIGINS`).
 - Payload de até 4 KB, validação de senha e de confirmação no servidor.
 - Limite persistente de 8 tentativas por e-mail em 15 minutos e 120 globais; identificadores de e-mail são HMAC, não texto puro.
 - RPCs executáveis apenas por service_role; SECURITY INVOKER; tabela privada com RLS.

@@ -4,7 +4,13 @@
 const URL = Deno.env.get('SUPABASE_URL')!;
 const ADMIN = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const ANON = Deno.env.get('SUPABASE_ANON_KEY')!;
+// Production domains (Lavô + legacy VitraCar). Extra exact origins can be added without a redeploy
+// through the ALLOWED_ORIGINS secret (comma-separated, https only).
 const origins = new Set(['https://lavooapp.vercel.app','https://lavoo.vercel.app','https://lavoo-henriquecastroeditor-5558s-projects.vercel.app','https://lavoo-git-main-henriquecastroeditor-5558s-projects.vercel.app','https://vitracar.vercel.app','https://vitracar-henriquecastroeditor-5558s-projects.vercel.app','https://vitracar-git-main-henriquecastroeditor-5558s-projects.vercel.app']);
+for (const extra of (Deno.env.get('ALLOWED_ORIGINS') || '').split(',')) { const o = extra.trim().replace(/\/$/, ''); if (/^https:\/\/[a-z0-9.-]+$/i.test(o)) origins.add(o); }
+// Vercel preview deployments of THIS team only (lavoo-<hash>-henriquecastroeditor-5558s-projects.vercel.app).
+const previewOrigin = /^https:\/\/(lavoo|lavooapp|vitracar)-[a-z0-9-]+-henriquecastroeditor-5558s-projects\.vercel\.app$/;
+const allowed = (origin: string) => origins.has(origin) || previewOrigin.test(origin);
 const keys = new Set<string>([ANON]);
 try { for (const key of Object.values(JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') || '{}'))) if (typeof key === 'string') keys.add(key); } catch { /* legacy public key is still accepted */ }
 // Public application key, NOT an administrative secret. Supports hosted runtimes without PUBLISHABLE_KEYS.
@@ -12,7 +18,7 @@ keys.add('sb_publishable_3Xce172eFXXm9Ojiz0s2Ww_TrAJa5f8');
 
 function headers(origin: string | null): Record<string,string> {
   const h: Record<string,string> = {'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Vary':'Origin'};
-  if (origin && origins.has(origin)) h['Access-Control-Allow-Origin'] = origin;
+  if (origin && allowed(origin)) h['Access-Control-Allow-Origin'] = origin;
   h['Access-Control-Allow-Headers'] = 'apikey, authorization, content-type, x-client-info';
   h['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
   return h;
@@ -53,7 +59,7 @@ Deno.serve(async (req: Request) => {
   const h = headers(origin);
   const reply = (status:number,body:unknown) => new Response(JSON.stringify(body),{status,headers:h});
   const invalid = () => reply(400,{code:'invalid_credentials',message:'E-mail ou senha incorretos. Confira os dados para entrar.'});
-  if (origin && !origins.has(origin)) return reply(403,{message:'Origem não autorizada.'});
+  if (origin && !allowed(origin)) return reply(403,{message:'Origem não autorizada.'});
   if (req.method === 'OPTIONS') return new Response(null,{status:204,headers:h});
   if (req.method !== 'POST') return reply(405,{message:'Método não permitido.'});
   if (!URL || !ADMIN || !ANON) return reply(503,{message:'Cadastro indisponível. Tente novamente em instantes.'});

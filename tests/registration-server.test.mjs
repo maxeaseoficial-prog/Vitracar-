@@ -35,6 +35,7 @@ async function test(name,fn){await fn();count++;console.log('PASS',name)}
 await test('weak password denied before any Auth call',async()=>{const t=setup();assert.equal((await t.run({...valid,password:'weak',confirmPassword:'weak'})).status,400);assert.equal(t.calls.length,0)})
 await test('password confirmation required server-side',async()=>{const t=setup();assert.equal((await t.run({...valid,confirmPassword:'wrong'})).status,400);assert.equal(t.calls.length,0)})
 await test('untrusted origin blocked',async()=>{const t=setup();assert.equal((await t.run(valid,{Origin:'https://untrusted.invalid'})).status,403);assert.equal(t.calls.length,0)})
+await test('Lavoo production and team preview origins allowed, lookalikes blocked',async()=>{for(const o of ['https://lavooapp.vercel.app','https://lavoo-abc123-henriquecastroeditor-5558s-projects.vercel.app']){const t=setup();const res=await t.handler(new Request('https://function-test.invalid/',{method:'OPTIONS',headers:{Origin:o}}));assert.equal(res.status,204);assert.equal(res.headers.get('Access-Control-Allow-Origin'),o)}for(const o of ['https://lavooapp.vercel.app.evil.com','https://lavoo-abc-otherteam.vercel.app','http://lavooapp.vercel.app']){const t=setup();assert.equal((await t.run(valid,{Origin:o})).status,403)}})
 await test('missing app key blocked',async()=>{const t=setup();assert.equal((await t.run(valid,{apikey:''})).status,401);assert.equal(t.calls.length,0)})
 await test('new registration confirms only its newly created user and returns native session',async()=>{
  const t=setup()
