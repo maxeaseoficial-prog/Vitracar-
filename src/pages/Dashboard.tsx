@@ -1,10 +1,11 @@
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Activity, ArrowDownRight, ArrowUpRight, Banknote, CalendarDays, CarFront, ChevronRight,
-  CircleDollarSign, Coins, CreditCard, Users } from 'lucide-react'
-import { Empty, Loading, PageHeading, Panel, Status } from '../components/UI'
+  CircleDollarSign, Coins, CreditCard, Droplets, MessageCircle, Users } from 'lucide-react'
+import { Avatar, Empty, Loading, PageHeading, Panel, Status } from '../components/UI'
 import { useStore } from '../lib/store'
-import { dateTime, money, sum } from '../lib/utils'
+import { sinceLabel, washGaps } from '../lib/last-wash'
+import { date, dateTime, formatPlate, money, sum, whatsappLink } from '../lib/utils'
 
 const FinancialChart=lazy(()=>import('../components/FinancialChart').then(m=>({default:m.FinancialChart})))
 
@@ -14,6 +15,9 @@ export function Dashboard(){
   const {data,company}=useStore()
   const navigate=useNavigate()
   const [period,setPeriod]=useState<Period>(30)
+  const [showAllGaps,setShowAllGaps]=useState(false)
+  const gaps=useMemo(()=>washGaps(data.clients,data.service_orders),[data.clients,data.service_orders])
+  const shownGaps=showAllGaps?gaps:gaps.slice(0,5)
   const sold=sum(data.service_orders.filter(o=>o.status==='completed'&&inRange(o.completed_at||o.created_at,period)).map(o=>o.total_cents))
   const received=sum(data.payments.filter(p=>inRange(p.paid_at,period)).map(p=>p.amount_cents))
   const expenses=sum(data.expenses.filter(e=>inRange(e.occurred_on+'T12:00:00',period)).map(e=>e.amount_cents))
@@ -95,6 +99,22 @@ export function Dashboard(){
           <button className="btn btn-secondary btn-small" onClick={()=>navigate('/clientes')}><Users size={14}/> Clientes</button>
           <button className="btn btn-secondary btn-small" onClick={()=>navigate('/agenda')}><ArrowUpRight size={14}/> Nova agenda</button>
         </div>
+      </Panel>
+    </div>
+    <div style={{marginTop:19}}>
+      <Panel title="Clientes há mais tempo sem lavar" action={gaps.length>5?<button className="text-action" onClick={()=>setShowAllGaps(v=>!v)} aria-expanded={showAllGaps}>
+        {showAllGaps?'Ver menos':`Ver todos (${gaps.length})`}</button>:undefined}>
+        {gaps.length?<div className={showAllGaps?'gap-list gap-list-scroll':'gap-list'}>{shownGaps.map(({client,last,days},i)=>{
+          const car=last?data.vehicles.find(v=>v.id===last.vehicleId):undefined
+          const wa=whatsappLink(client.whatsapp)
+          return <div className="list-item-row" key={client.id}>
+            <span className="gap-rank">{i+1}</span><Avatar client={client} size="tiny"/>
+            <div style={{minWidth:0}}><div className="list-item-title">{client.name}</div>
+              <div className="list-item-subtitle">{last?`Última lavagem ${date(last.at)}${car?` · ${car.brand} ${car.model}${car.plate?' '+formatPlate(car.plate):''}`:''}`:`Sem lavagem registrada · cliente desde ${date(client.created_at)}`}</div></div>
+            <div className="list-item-right gap-days"><strong>{days===0?'hoje':`${days} ${days===1?'dia':'dias'}`}</strong><small>{last?sinceLabel(days):'sem lavagem'}</small></div>
+            {wa&&<a className="icon-button" href={wa} target="_blank" rel="noreferrer" aria-label={`Chamar ${client.name} no WhatsApp`} title="Chamar no WhatsApp"><MessageCircle size={16}/></a>}
+          </div>})}</div>
+        :<Empty title="Nenhum cliente cadastrado" description="Cadastre clientes para acompanhar quem está há mais tempo sem lavar."/>}
       </Panel>
     </div>
   </>

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, CalendarPlus, Camera, ChevronLeft, ChevronRight, CarFront, FilePlus2, History, MessageCircle, Pencil, Phone, Plus, Trash2, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarPlus, Camera, ChevronLeft, ChevronRight, CarFront, Droplets, FilePlus2, History, MessageCircle, Pencil, Phone, Plus, Trash2, X } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Avatar, Button, CoinCount, Empty, ErrorText, Field, Input, PageHeading, Panel, SearchInput, Select, Status, TableWrap, Textarea } from '../components/UI'
 import { CarViewer, QuickCarViewer, VehicleStudioForm } from '../components/vehicle/DeferredVehicle'
 import { categories } from '../lib/catalog'
 import { useStore } from '../lib/store'
 import { AVATAR_OPTIONS, avatarUri, genderOf } from '../lib/avatar'
+import { daysSince, lastWashByClient, sinceLabel } from '../lib/last-wash'
 import { date, dateTime, escapeSearch, formatPhone, formatQuoteNumber, whatsappLink, formatPlate, money, number, sum } from '../lib/utils'
 import type { AvatarKind, Client } from '../types'
 
@@ -100,6 +101,7 @@ export function Clients(){
   const [search,setSearch]=useState(''),[modal,setModal]=useState(false),[editing,setEditing]=useState<Client|null>(null)
   const [deleting,setDeleting]=useState<Client|null>(null)
   const active=useMemo(()=>data.clients.filter(c=>!c.archived_at),[data.clients])
+  const lastWash=useMemo(()=>lastWashByClient(data.service_orders),[data.service_orders])
   const activeCars=useMemo(()=>data.vehicles.filter(v=>active.some(c=>c.id===v.client_id)),[data.vehicles,active])
   const filtered=useMemo(()=>active.filter(c=>{
     const plates=data.vehicles.filter(v=>v.client_id===c.id).map(v=>v.plate+' '+v.brand+' '+v.model).join(' ')
@@ -116,6 +118,7 @@ export function Clients(){
       const cars=data.vehicles.filter(v=>v.client_id===client.id)
       const coins=sum(data.loyalty_ledger.filter(l=>l.client_id===client.id).map(l=>l.change))
       const visits=data.service_orders.filter(o=>o.client_id===client.id).length
+      const wash=lastWash.get(client.id),washDays=wash?daysSince(wash.at):0
       const wa=whatsappLink(client.whatsapp)
       return <article className="client-card" key={client.id}>
         <header><Avatar client={client} size="large"/>
@@ -128,6 +131,8 @@ export function Clients(){
         <div className="client-card-cars">{cars.length?<>{cars.slice(0,2).map(v=><span key={v.id} className="plate-chip">
           <CarFront size={13}/>{v.brand} {v.model}<b>{formatPlate(v.plate)}</b></span>)}
           {cars.length>2&&<span className="plate-chip more">+{cars.length-2}</span>}</>:<span className="plate-chip empty">Nenhum veículo cadastrado</span>}</div>
+        <div className={`client-last-wash ${!wash?'never':washDays>=30?'late':''}`}>
+          <Droplets size={14}/>{wash?<span>Última lavagem <b>{sinceLabel(washDays)}</b> · {date(wash.at)}</span>:<span>Ainda não lavou</span>}</div>
         <div className="client-card-stats">
           <div><small>Veículos</small><strong>{cars.length}</strong></div>
           <div><small>Atendimentos</small><strong>{visits}</strong></div>
@@ -152,6 +157,7 @@ export function ClientProfile(){
   const client=data.clients.find(c=>c.id===id&&!c.archived_at)
   if(!client)return <Empty title="Cliente não encontrado" action={<Button onClick={()=>navigate('/clientes')}>Voltar aos clientes</Button>}/>
   const cars=data.vehicles.filter(v=>v.client_id===client.id)
+  const profileWash=lastWashByClient(data.service_orders).get(client.id)
   const orders=data.service_orders.filter(o=>o.client_id===client.id).sort((a,b)=>(b.completed_at||'').localeCompare(a.completed_at||''))
   const ledger=data.loyalty_ledger.filter(l=>l.client_id===client.id)
   const balance=sum(ledger.map(l=>l.change))
@@ -162,7 +168,8 @@ export function ClientProfile(){
     <div className="dashboard-grid dashboard-grid-secondary">
       <Panel>
         <div className="profile-identity"><Avatar client={client} size="large"/><div><h2>{client.name}</h2>
-          <p>{formatPhone(client.whatsapp)||'WhatsApp não informado'}</p><p>Cliente desde {date(client.created_at)}</p></div>
+          <p>{formatPhone(client.whatsapp)||'WhatsApp não informado'}</p><p>Cliente desde {date(client.created_at)}</p>
+          <p>{profileWash?<>Última lavagem <b>{sinceLabel(daysSince(profileWash.at))}</b> · {date(profileWash.at)}</>:'Ainda não lavou'}</p></div>
           <button className="icon-button" style={{marginLeft:'auto'}} onClick={()=>setShowClient(true)} aria-label="Editar cliente"><Pencil size={17}/></button>
         </div>
         <div className="profile-summary">
