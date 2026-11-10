@@ -22,17 +22,17 @@ function createMercosulTexture(plate:string) {
   const ctx=canvas.getContext('2d')
   if(!ctx)return null
   const label=normalizePlate(plate).slice(0,7)||'ABC1D23'
-  ctx.fillStyle='#101827'
+  ctx.fillStyle='#0B0D12'
   ctx.fillRect(0,0,768,244)
   ctx.fillStyle='#f7f8f9'
   ctx.fillRect(12,12,744,220)
-  ctx.fillStyle='#003da5'
+  ctx.fillStyle='#0B0D12'
   ctx.fillRect(12,12,744,61)
   ctx.fillStyle='#fff'
   ctx.font='700 35px Arial, sans-serif'
   ctx.textAlign='center'
   ctx.fillText('BRASIL',384,54)
-  ctx.fillStyle='#171b24'
+  ctx.fillStyle='#0B0D12'
   ctx.font='700 126px Arial, sans-serif'
   ctx.fillText(label,384,191)
   const texture=new CanvasTexture(canvas)

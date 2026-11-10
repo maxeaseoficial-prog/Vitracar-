@@ -37,9 +37,9 @@ export function QuickCarViewer({category,color,plate,variant='studio'}:Props){
         <Canvas key={resetKey} frameloop={!visible?'never':auto?'always':'demand'} camera={{position:[6.2,3.2,5.8],fov:37,near:.1,far:100}}
           dpr={[1,1.5]} gl={{antialias:true,powerPreference:'high-performance'}}
           onCreated={({gl})=>{gl.toneMappingExposure=1.05}}>
-          <color attach="background" args={['#f7fbff']}/>
+          <color attach="background" args={['#F4F7F1']}/>
           <ambientLight intensity={1.6}/>
-          <hemisphereLight args={['#ffffff','#d0dfed',2.2]}/>
+          <hemisphereLight args={['#ffffff','#F4F7F1',2.2]}/>
           <directionalLight position={[6,10,5]} intensity={3} castShadow/>
           <directionalLight position={[-4,5,-6]} intensity={1.4}/>
           <QuickCarModel category={category} color={color} plate={plate}/>

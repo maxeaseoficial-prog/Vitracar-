@@ -30,11 +30,11 @@ function plateTexture(plate:string){
   canvas.width=600;canvas.height=190
   const ctx=canvas.getContext('2d')
   if(!ctx)return null
-  ctx.fillStyle='#17253b';ctx.fillRect(0,0,600,190)
-  ctx.fillStyle='#f6f8fa';ctx.fillRect(7,7,586,176)
-  ctx.fillStyle='#0131cd';ctx.fillRect(7,7,586,46)
+  ctx.fillStyle='#0B0D12';ctx.fillRect(0,0,600,190)
+  ctx.fillStyle='#F4F7F1';ctx.fillRect(7,7,586,176)
+  ctx.fillStyle='#0B0D12';ctx.fillRect(7,7,586,46)
   ctx.textAlign='center';ctx.fillStyle='#fff';ctx.font='bold 27px Arial';ctx.fillText('BRASIL',300,41)
-  ctx.fillStyle='#17253b';ctx.font='bold 99px monospace'
+  ctx.fillStyle='#0B0D12';ctx.font='bold 99px monospace'
   ctx.fillText((plate.toUpperCase().replace(/[^A-Z0-9]/g,'')||'ABC1D23').slice(0,7),300,155)
   const map=new CanvasTexture(canvas);map.colorSpace=SRGBColorSpace
   return map
@@ -55,15 +55,15 @@ function Wheel({x,z,r=.37}:{x:number;z:number;r?:number}){
   return <group position={[x,r+.01,z]} scale={[k,k,1]}>
     <mesh rotation={[Math.PI/2,0,0]} castShadow>
       <cylinderGeometry args={[.37,.37,.18,24]}/>
-      <meshStandardMaterial color="#161f2b" roughness={.85}/>
+      <meshStandardMaterial color="#0B0D12" roughness={.85}/>
     </mesh>
     <mesh rotation={[Math.PI/2,0,0]} position={[0,0,z>0?.103:-.103]}>
       <cylinderGeometry args={[.235,.235,.015,24]}/>
-      <meshStandardMaterial color="#becbdd" metalness={.4} roughness={.4}/>
+      <meshStandardMaterial color="#E5E9E1" metalness={.4} roughness={.4}/>
     </mesh>
     <mesh rotation={[Math.PI/2,0,0]} position={[0,0,z>0?.118:-.118]}>
       <cylinderGeometry args={[.11,.11,.019,10]}/>
-      <meshStandardMaterial color="#52657d" metalness={.5} roughness={.34}/>
+      <meshStandardMaterial color="#0B0D12" metalness={.5} roughness={.34}/>
     </mesh>
   </group>
 }
@@ -77,7 +77,7 @@ function SlopedGlass({from,to,depth,outward}:{from:Vec2;to:Vec2;depth:number;out
   return <mesh position={[(from[0]+to[0])/2+normal[0]*off,(from[1]+to[1])/2+normal[1]*off,0]}
     rotation={[0,0,Math.atan2(dy,dx)]}>
     <boxGeometry args={[len*.9,.012,depth*.86]}/>
-    <meshStandardMaterial color="#1f3c56" metalness={.3} roughness={.18}/>
+    <meshStandardMaterial color="#0B0D12" metalness={.3} roughness={.18}/>
   </mesh>
 }
 export function QuickCarModel({category,color,plate}:{category:string;color:string;plate:string}){
@@ -108,7 +108,7 @@ export function QuickCarModel({category,color,plate}:{category:string;color:stri
     <SlopedGlass from={[spec.baseFront,1]} to={[spec.roofFront,spec.roofY-.12]} depth={cabinDepth} outward={1}/>
     <SlopedGlass from={[spec.baseRear,1]} to={[spec.roofRear,spec.roofY-.07]} depth={cabinDepth} outward={-1}/>
     {(spec.kind==='suv'||spec.kind==='pickup')&&<RoundedBox args={[spec.length*.98,.16,spec.width+.02]} radius={.05} smoothness={2}
-      position={[0,.44,0]}><meshStandardMaterial color="#2a3442" roughness={.8}/></RoundedBox>}
+      position={[0,.44,0]}><meshStandardMaterial color="#0B0D12" roughness={.8}/></RoundedBox>}
     <RoundedBox args={[spec.length,.65,spec.width]} radius={.12} smoothness={3}
       position={[0,.7,0]} castShadow receiveShadow>
       <meshPhysicalMaterial color={hex} metalness={.14} roughness={.31} clearcoat={.76} clearcoatRoughness={.22}/>
@@ -120,17 +120,17 @@ export function QuickCarModel({category,color,plate}:{category:string;color:stri
     {([-1,1] as const).map(side=><group key={side}>
       {windows.map((shape,i)=><mesh key={i} position={[0,0,side*(cabinDepth/2+.05)]}>
         <shapeGeometry args={[shape]}/>
-        <meshStandardMaterial side={DoubleSide} color="#294b68" metalness={.22} roughness={.23}/>
+        <meshStandardMaterial side={DoubleSide} color="#0B0D12" metalness={.22} roughness={.23}/>
       </mesh>)}
       <Line points={[[middle,1.10,side*(spec.width/2+.006)],[middle,.55,side*(spec.width/2+.006)]]}
-        color="#163b58" lineWidth={1} transparent opacity={.33}/>
+        color="#0B0D12" lineWidth={1} transparent opacity={.33}/>
       <RoundedBox args={[.28,.17,.22]} radius={.055} smoothness={2}
         position={[spec.baseFront-.04,1.08,side*(spec.width/2+.075)]} castShadow>
         <meshStandardMaterial color={hex} roughness={.32} metalness={.1}/>
       </RoundedBox>
       <RoundedBox args={[.06,.15,.34]} radius={.028} smoothness={2}
         position={[spec.length/2+.025,.91,side*(spec.width*.33)]}>
-        <meshStandardMaterial color="#eaf5ff" emissive="#d8ecff" emissiveIntensity={.25}/>
+        <meshStandardMaterial color="#F4F7F1" emissive="#F4F7F1" emissiveIntensity={.25}/>
       </RoundedBox>
       <RoundedBox args={[.07,.16,.34]} radius={.028} smoothness={2}
         position={[-spec.length/2-.028,.85,side*(spec.width*.33)]}>
@@ -139,15 +139,15 @@ export function QuickCarModel({category,color,plate}:{category:string;color:stri
     </group>)}
     <RoundedBox args={[.10,.22,spec.width*.53]} radius={.055} smoothness={2}
       position={[spec.length/2+.067,.76,0]}>
-      <meshStandardMaterial color="#152a40" roughness={.72}/>
+      <meshStandardMaterial color="#0B0D12" roughness={.72}/>
     </RoundedBox>
     <RoundedBox args={[.14,.13,spec.width*.93]} radius={.04} smoothness={2}
-      position={[spec.length/2+.028,.48,0]}><meshStandardMaterial color="#34445a" roughness={.66}/></RoundedBox>
+      position={[spec.length/2+.028,.48,0]}><meshStandardMaterial color="#0B0D12" roughness={.66}/></RoundedBox>
     <RoundedBox args={[.11,.12,spec.width*.91]} radius={.04} smoothness={2}
-      position={[-spec.length/2-.023,.49,0]}><meshStandardMaterial color="#34445a" roughness={.66}/></RoundedBox>
+      position={[-spec.length/2-.023,.49,0]}><meshStandardMaterial color="#0B0D12" roughness={.66}/></RoundedBox>
     {spec.kind==='pickup'&&<group position={[-spec.length*.25,1.06,0]}>
       <RoundedBox args={[spec.length*.44,.10,spec.width*.87]} radius={.02} smoothness={1}>
-        <meshStandardMaterial color="#29384a" roughness={.8}/>
+        <meshStandardMaterial color="#0B0D12" roughness={.8}/>
       </RoundedBox>
       {([-1,1] as const).map(side=><RoundedBox key={side} args={[spec.length*.42,.08,.055]} radius={.02}
         position={[0,.065,side*spec.width*.40]}>

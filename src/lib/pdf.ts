@@ -29,7 +29,7 @@ async function loadLogo(url:string|null):Promise<Logo|null>{
   return task
 }
 
-const C={ink:'#0B0D12',blue:'#0131CD',lime:'#B9FC01',muted:'#616977',line:'#E5E8EE',soft:'#F5F6F9',white:'#FFFFFF'}
+const C={ink:'#0B0D12',blue:'#0B0D12',lime:'#B9FC01',muted:'#616977',line:'#F4F7F1',soft:'#F4F7F1',white:'#FFFFFF'}
 const clean=(s:string)=>s.replace(/\u00a0|\u202f/g,' ').replace(/\t/g,' ')
 const cash=(value:number)=>clean(money(value))
 

@@ -154,7 +154,7 @@ export function ClientProfile(){
       {cars.length?<div className="form-grid">{cars.map(v=><div className="vehicle-card" key={v.id} onClick={()=>navigate(`/veiculos/${v.id}`)} role="link" tabIndex={0}
         onKeyDown={e=>{if(e.key==='Enter')navigate(`/veiculos/${v.id}`)}}>
         <div className="vehicle-icon"><CarFront size={28}/></div><div><strong>{v.brand} {v.model}</strong>
-          <small>{formatPlate(v.plate)} · {v.color}</small></div><span style={{marginLeft:'auto',color:'#97aabc'}}>›</span>
+          <small>{formatPlate(v.plate)} · {v.color}</small></div><span style={{marginLeft:'auto',color:'#0B0D12'}}>›</span>
       </div>)}</div>:<Empty title="Nenhum veículo cadastrado" action={<Button size="small" onClick={()=>setVehicleModal(true)}><Plus size={14}/> Cadastrar veículo</Button>}/>}</Panel>
     <div className="dashboard-grid" style={{marginTop:19}}>
       <Panel title="Histórico de atendimentos">
