@@ -8,6 +8,7 @@ import './theme.css'
 import './vehicle-studio.css'
 import './quote-actions.css'
 import './auth-brand.css'
+import './responsive.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><BrowserRouter><App/></BrowserRouter></React.StrictMode>
