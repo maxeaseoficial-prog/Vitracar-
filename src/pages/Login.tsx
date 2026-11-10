@@ -101,7 +101,7 @@ export function Login(){
         <h1>Seu negócio merece uma <span>gestão de alto nível.</span></h1>
         <p>Clientes, veículos, orçamentos, finanças e fidelidade em uma plataforma feita para estética automotiva.</p>
       </div>
-      <div className="auth-foot">VitraCar · Sistema de gestão automotiva</div>
+      <div className="auth-foot">Lavoo · Sistema de gestão automotiva</div>
     </div>
     <div className="auth-side"><div className="auth-form">
       <span className="eyebrow"><ShieldCheck size={13} style={{display:'inline-block',verticalAlign:'middle',marginRight:6}}/> ÁREA SEGURA</span>
@@ -174,7 +174,7 @@ export function Onboarding({onDone}:{onDone:()=>Promise<void>}){
       <span className="eyebrow">PRIMEIRA CONFIGURAÇÃO</span><h2>Nome do estabelecimento</h2>
       <p>Esta será a identificação principal no dashboard e nos orçamentos.</p>
       <form onSubmit={submit}>
-        <Field label="Estabelecimento"><Input required minLength={2} maxLength={120} value={name} onChange={e=>setName(e.target.value)} placeholder="Ex.: VitraCar Studio"/></Field>
+        <Field label="Estabelecimento"><Input required minLength={2} maxLength={120} value={name} onChange={e=>setName(e.target.value)} placeholder="Ex.: Lavoo"/></Field>
         <ErrorText message={error}/>
         <Button type="submit" disabled={working}>{working?'Criando...':'Criar estabelecimento'}<ArrowRight size={16}/></Button>
       </form>
