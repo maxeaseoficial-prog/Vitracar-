@@ -12,7 +12,7 @@ export function InventoryProvider({children}:{children:ReactNode}){
  const loaded=useRef(false),flight=useRef<Promise<void>|null>(null),sequence=useRef(0),alive=useRef(true)
  const records=useRef<InventoryProduct[]>([]),demoMoves=useRef<InventoryMovement[]>([])
  const signed=useRef(new Map<string,{until:number;url:string}>())
- useEffect(()=>{alive.current=true;return()=>{alive.current=false;sequence.current++;signed.current.clear()}},[])
+ useEffect(()=>{alive.current=true;return()=>{alive.current=false;signed.current.clear()}},[])
  const reload=useCallback(async()=>{
   const request=++sequence.current
   if(isDemo){loaded.current=true;return}

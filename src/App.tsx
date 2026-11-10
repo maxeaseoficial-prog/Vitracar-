@@ -7,8 +7,9 @@ import { ErrorText, Loading } from './components/UI'
 import { isConfigured, supabase } from './lib/supabase'
 import { demoCompany, demoProfile } from './lib/demo'
 import { DataProvider, useStore } from './lib/store'
+import { InventoryProvider } from './lib/inventory-store'
 import { Login, Onboarding } from './pages/Login'
-import { loadDashboard, loadClients, loadServices, loadPriceCalculator, loadQuotes, loadAgenda, loadFinance, loadLoyalty, loadSettings, preloadRoute } from './lib/page-loaders'
+import { loadDashboard, loadClients, loadServices, loadInventory, loadPriceCalculator, loadQuotes, loadAgenda, loadFinance, loadLoyalty, loadSettings, preloadRoute } from './lib/page-loaders'
 
 // Cada página é baixada só quando aberta: o 3D (Three.js) e o PDF (jsPDF)
 // deixam de pesar na primeira carga.
@@ -17,6 +18,7 @@ const Clients=lazy(()=>loadClients().then(m=>({default:m.Clients})))
 const ClientProfile=lazy(()=>loadClients().then(m=>({default:m.ClientProfile})))
 const VehicleDetail=lazy(()=>loadClients().then(m=>({default:m.VehicleDetail})))
 const Services=lazy(()=>loadServices().then(m=>({default:m.Services})))
+const Inventory=lazy(()=>loadInventory().then(m=>({default:m.Inventory})))
 const PriceCalculator=lazy(()=>loadPriceCalculator().then(m=>({default:m.PriceCalculator})))
 const Quotes=lazy(()=>loadQuotes().then(m=>({default:m.Quotes})))
 const Agenda=lazy(()=>loadAgenda().then(m=>({default:m.Agenda})))
@@ -52,6 +54,7 @@ function InnerRoutes(){
     <Route path="/clientes/:id" element={page(<ClientProfile/>)}/>
     <Route path="/veiculos/:id" element={page(<VehicleDetail/>)}/>
     <Route path="/servicos" element={page(<Services/>)}/>
+    <Route path="/estoque" element={page(<Inventory/>)}/>
     <Route path="/calcular-preco" element={page(<PriceCalculator/>)}/>
     <Route path="/orcamentos" element={page(<Quotes/>)}/>
     <Route path="/agenda" element={page(<Agenda/>)}/>
@@ -121,11 +124,11 @@ function LiveApp(){
   // Never render an old account's data during a switch, even before the effect runs.
   if(profileFor!==user.id)return <Loading label="Verificando acesso..."/>
   if(!profile)return <Onboarding onDone={loadProfile}/>
-  return <DataProvider key={`${user.id}:${profile.company_id}`} companyId={profile.company_id} profile={profile} demo={false}><InnerRoutes/></DataProvider>
+  return <DataProvider key={`${user.id}:${profile.company_id}`} companyId={profile.company_id} profile={profile} demo={false}><InventoryProvider><InnerRoutes/></InventoryProvider></DataProvider>
 }
 
 export function App(){
   return <AppErrorBoundary>{!isConfigured
-    ?<DataProvider companyId={demoCompany.id} profile={demoProfile} demo={true}><InnerRoutes/></DataProvider>
+    ?<DataProvider companyId={demoCompany.id} profile={demoProfile} demo={true}><InventoryProvider><InnerRoutes/></InventoryProvider></DataProvider>
     :<LiveApp/>}</AppErrorBoundary>
 }

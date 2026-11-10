@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Calculator, CalendarDays, CarFront, ChevronRight, CircleDollarSign, Coins, FileText,
+import { Boxes, Calculator, CalendarDays, CarFront, ChevronRight, CircleDollarSign, Coins, FileText,
   LayoutDashboard, LogOut, Menu, Settings2, Wrench, X } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { supabase } from '../lib/supabase'
@@ -15,6 +15,7 @@ const menus=[
   {to:'/clientes',label:'Clientes e veículos',icon:CarFront},
   {to:'/servicos',label:'Serviços',icon:Wrench},
   {to:'/calcular-preco',label:'Calcular preço',icon:Calculator},
+  {to:'/estoque',label:'Estoque',icon:Boxes},
   {to:'/orcamentos',label:'Orçamentos',icon:FileText},
   {to:'/financeiro',label:'Financeiro',icon:CircleDollarSign},
   {to:'/fidelidade',label:'Fidelidade',icon:Coins}
@@ -34,7 +35,7 @@ export function Layout(){
     if(error){setLeaving(false);setLogoutError(error.message)}
   }
   return <div className="app-shell">
-    {open&&<div className="mobile-overlay" onClick={()=>setOpen(false)}/>} 
+    {open&&<div className="mobile-overlay" onClick={()=>setOpen(false)}/>}
     <aside className={`sidebar ${open?'sidebar-open':''}`}>
       <div className="sidebar-logo sidebar-logo-official">
         <img src="/vitracar-logo-white.png" alt="VitraCar" className="sidebar-brand-image"

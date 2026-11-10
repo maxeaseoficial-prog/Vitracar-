@@ -35,7 +35,7 @@ const cash=(value:number)=>clean(money(value))
 
 /** Vector PDF: selectable text, repeated table headers, and overflow-safe notes. */
 export async function createQuoteDocument(q:Quote,items:QuoteItem[],client:Client,vehicle:Vehicle,company:Company):Promise<jsPDF>{
-  if(!items.length)throw new Error('O orçamento precisa de pelo menos um serviço.')
+  if(!items.length)throw new Error('O orçamento precisa de pelo menos um item.')
   if(items.some(i=>!i.description.trim()||!Number.isSafeInteger(i.quantity)||i.quantity<1||!Number.isSafeInteger(i.unit_cents)||i.unit_cents<0))throw new Error('Há itens inválidos no orçamento.')
   const subtotal=quoteSubtotal(items)
   if(!Number.isSafeInteger(subtotal)||!Number.isSafeInteger(q.discount_cents)||q.discount_cents<0||q.discount_cents>subtotal)throw new Error('Confira os valores e o desconto do orçamento.')
@@ -61,7 +61,7 @@ export async function createQuoteDocument(q:Quote,items:QuoteItem[],client:Clien
   function ensure(height:number){if(y+height>BOTTOM)nextPage()}
   function tableHeader(){
     pdf.setFillColor(C.blue);pdf.roundedRect(L,y,W,10,2,2,'F')
-    write('SERVIÇO',L+4,y+6.5,8,true,C.white)
+    write('ITEM',L+4,y+6.5,8,true,C.white)
     write('QTD.',117,y+6.5,8,true,C.white,'right')
     write('UNITÁRIO',151,y+6.5,8,true,C.white,'right')
     write('TOTAL',R-4,y+6.5,8,true,C.white,'right');y+=12
@@ -77,7 +77,7 @@ export async function createQuoteDocument(q:Quote,items:QuoteItem[],client:Clien
     const maxW=19,maxH=19,w=Math.min(maxW,maxH*logo.ratio),h=w/logo.ratio
     try{pdf.addImage(logo.data,logo.format,L+6+(23-w)/2,25+(23-h)/2,w,h)}catch{write('VC',L+10,39,13,true,C.blue)}
   }
-  write('PROPOSTA DE SERVIÇOS',titleX,27,7.5,true,C.lime)
+  write('PROPOSTA COMERCIAL',titleX,27,7.5,true,C.lime)
   businessLines.forEach((line,i)=>write(line,titleX,37+i*6,15,true,C.white))
   write('ORÇAMENTO',R-7,28,8,true,'#B5BBC6','right')
   write(ref,R-7,40,preview?14:19,true,C.white,'right')
@@ -104,10 +104,10 @@ export async function createQuoteDocument(q:Quote,items:QuoteItem[],client:Clien
   vehicleMeta.forEach((line,i)=>write(line,L+95,vy+6+i*4.6,9,false,C.muted))
   y+=boxH+12
   ensure(28)
-  write('SERVIÇOS PROPOSTOS',L,y,10,true);write(preview?'Prévia não salva':quoteStatusLabel(q.status),R,y,8,false,C.muted,'right');y+=7
+  write('ITENS DA PROPOSTA',L,y,10,true);write(preview?'Prévia não salva':quoteStatusLabel(q.status),R,y,8,false,C.muted,'right');y+=7
   tableHeader()
   for(let index=0;index<items.length;index++){
-    const item=items[index],textLines=lines(item.description,85,10)
+    const item=items[index],textLines=lines((item.item_kind==='product'?'Produto: ':'')+item.description,85,10)
     let offset=0
     while(offset<textLines.length){
       if(y+15>BOTTOM)nextPage(true)
@@ -115,7 +115,7 @@ export async function createQuoteDocument(q:Quote,items:QuoteItem[],client:Clien
       const capacity=Math.max(1,Math.floor((BOTTOM-y-9-extra)/LINE))
       const part=textLines.slice(offset,offset+capacity),height=9+extra+part.length*LINE
       pdf.setFillColor(index%2?C.white:C.soft);pdf.rect(L,y,W,height,'F')
-      if(continuation)write('CONTINUAÇÃO DO SERVIÇO',L+4,y+4.5,6.5,true,C.muted)
+      if(continuation)write('CONTINUAÇÃO DO ITEM',L+4,y+4.5,6.5,true,C.muted)
       part.forEach((line,i)=>write(line,L+4,y+7+extra+i*LINE,10))
       if(!continuation){
         write(String(item.quantity),117,y+7,9.5,false,C.ink,'right')

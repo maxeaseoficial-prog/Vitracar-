@@ -71,6 +71,8 @@ export interface Quote {
   created_at: string
 }
 export interface QuoteItem {
+  product_id?: Id | null
+  item_kind?: 'service' | 'product'
   id: Id
   company_id: Id
   quote_id: Id
