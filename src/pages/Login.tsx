@@ -9,7 +9,7 @@ import '../auth-registration.css'
 
 function AuthLogo(){
   return <div className="auth-logo">
-    <img src="/vitracar-logo-white.png" alt="VitraCar" className="auth-logo-image" loading="eager" decoding="async"/>
+    <img src="/logo-lavoo-white.png" alt="Lavoo" className="auth-logo-image" loading="eager" decoding="async"/>
   </div>
 }
 
