@@ -4,7 +4,7 @@
 const URL = Deno.env.get('SUPABASE_URL')!;
 const ADMIN = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const ANON = Deno.env.get('SUPABASE_ANON_KEY')!;
-const origins = new Set(['https://vitracar.vercel.app','https://vitracar-henriquecastroeditor-5558s-projects.vercel.app','https://vitracar-git-main-henriquecastroeditor-5558s-projects.vercel.app']);
+const origins = new Set(['https://lavooapp.vercel.app','https://lavoo.vercel.app','https://lavoo-henriquecastroeditor-5558s-projects.vercel.app','https://lavoo-git-main-henriquecastroeditor-5558s-projects.vercel.app','https://vitracar.vercel.app','https://vitracar-henriquecastroeditor-5558s-projects.vercel.app','https://vitracar-git-main-henriquecastroeditor-5558s-projects.vercel.app']);
 const keys = new Set<string>([ANON]);
 try { for (const key of Object.values(JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') || '{}'))) if (typeof key === 'string') keys.add(key); } catch { /* legacy public key is still accepted */ }
 // Public application key, NOT an administrative secret. Supports hosted runtimes without PUBLISHABLE_KEYS.
