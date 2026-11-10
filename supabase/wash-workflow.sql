@@ -78,7 +78,8 @@ begin
   if ap.status='cancelled' then raise exception 'Atendimento cancelado';end if;
   if p_expected_version is distinct from ap.workflow_version then raise exception 'Este atendimento mudou em outra tela. Atualize e tente novamente.' using errcode='40001';end if;
   oid:=public.complete_appointment(ap.id);
-  select total_cents into total from public.service_orders where id=oid and company_id=cid for update;
+  -- The payment trigger takes the order lock without granting users UPDATE on orders.
+  select total_cents into total from public.service_orders where id=oid and company_id=cid;
   select coalesce(sum(amount_cents),0) into received from public.payments where order_id=oid and company_id=cid;
   if p_amount_cents>total-received or (p_amount_cents=0 and received<total) then raise exception 'Confira o valor: ele deve respeitar o saldo pendente';end if;
   if p_amount_cents>0 then
