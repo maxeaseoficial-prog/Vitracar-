@@ -31,6 +31,8 @@ export interface Client {
   photo_path: string | null
   avatar_kind: AvatarKind
   notes: string | null
+  /** Preenchido quando o cliente é excluído da lista. O histórico financeiro é mantido. */
+  archived_at?: string | null
   created_at: string
 }
 export interface Vehicle {

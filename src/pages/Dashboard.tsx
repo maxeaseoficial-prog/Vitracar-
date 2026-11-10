@@ -82,11 +82,11 @@ export function Dashboard(){
       </Panel>
       <Panel title="Seu negócio em números">
         <div className="mini-stats-grid" style={{marginBottom:20}}>
-          <div className="mini-stat"><small>Clientes</small><strong>{data.clients.length}</strong></div>
-          <div className="mini-stat"><small>Veículos</small><strong>{data.vehicles.length}</strong></div>
+          <div className="mini-stat"><small>Clientes</small><strong>{data.clients.filter(c=>!c.archived_at).length}</strong></div>
+          <div className="mini-stat"><small>Veículos</small><strong>{data.vehicles.filter(v=>data.clients.some(c=>c.id===v.client_id&&!c.archived_at)).length}</strong></div>
           <div className="mini-stat"><small>Serviços</small><strong>{data.services.filter(s=>s.active).length}</strong></div>
         </div>
-        <div className="detail-line"><span><Users size={15} style={{display:'inline-block',verticalAlign:'middle',marginRight:5}}/> Clientes ativos</span><strong>{data.clients.length}</strong></div>
+        <div className="detail-line"><span><Users size={15} style={{display:'inline-block',verticalAlign:'middle',marginRight:5}}/> Clientes ativos</span><strong>{data.clients.filter(c=>!c.archived_at).length}</strong></div>
         <div className="detail-line"><span><Coins size={15} style={{display:'inline-block',verticalAlign:'middle',marginRight:5}}/> Moedas distribuídas</span>
           <strong>{sum(data.loyalty_ledger.filter(l=>l.kind==='earn').map(l=>l.change))}</strong></div>
         <div className="detail-line"><span><Activity size={15} style={{display:'inline-block',verticalAlign:'middle',marginRight:5}}/> Valores a receber</span>

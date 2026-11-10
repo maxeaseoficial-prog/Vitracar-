@@ -16,7 +16,7 @@ export function Loyalty(){
   const [pageError,setPageError]=useState<string|null>(null)
   const ranked=useMemo(()=>{
     const now=new Date()
-    return data.clients.map(client=>{
+    return data.clients.filter(c=>!c.archived_at).map(client=>{
       const ledger=data.loyalty_ledger.filter(l=>l.client_id===client.id)
       const earned=sum(ledger.filter(l=>l.change>0&&(period==='all'||(
         new Date(l.created_at).getMonth()===now.getMonth()&&new Date(l.created_at).getFullYear()===now.getFullYear()
@@ -73,7 +73,7 @@ export function Loyalty(){
       <div className="kpi-card"><div className="kpi-head"><span className="kpi-label">Moedas resgatadas</span><span className="kpi-icon dark"><Gift size={18}/></span></div>
         <div className="kpi-value">{number(totalRedeemed)}</div><div className="kpi-foot">Utilizadas em recompensas</div></div>
       <div className="kpi-card"><div className="kpi-head"><span className="kpi-label">Clientes participantes</span><span className="kpi-icon green"><Award size={18}/></span></div>
-        <div className="kpi-value">{data.clients.filter(c=>data.loyalty_ledger.some(l=>l.client_id===c.id)).length}</div><div className="kpi-foot">Com movimentação no programa</div></div>
+        <div className="kpi-value">{data.clients.filter(c=>!c.archived_at&&data.loyalty_ledger.some(l=>l.client_id===c.id)).length}</div><div className="kpi-foot">Com movimentação no programa</div></div>
     </div>
     <div className="dashboard-grid dashboard-grid-secondary">
       <Panel title="Ranking de clientes" action={<div className="period-tabs">

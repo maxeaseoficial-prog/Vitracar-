@@ -64,9 +64,9 @@ export function ClientVehiclePicker({clients,vehicles,clientId,vehicleId,onClien
   const owned=useMemo(()=>vehicles.filter(v=>v.client_id===clientId),[vehicles,clientId])
   const filtered=useMemo(()=>{
     const q=escapeSearch(query)
-    return clients.filter(c=>escapeSearch(`${c.name} ${c.whatsapp||''} ${vehicles.filter(v=>v.client_id===c.id).map(v=>v.plate).join(' ')}`).includes(q))
+    return clients.filter(c=>!c.archived_at||c.id===clientId).filter(c=>escapeSearch(`${c.name} ${c.whatsapp||''} ${vehicles.filter(v=>v.client_id===c.id).map(v=>v.plate).join(' ')}`).includes(q))
       .sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'))
-  },[clients,vehicles,query])
+  },[clients,vehicles,query,clientId])
   const cursor=Math.min(highlight,Math.max(0,filtered.length-1))
   useEffect(()=>{
     if(!open)return
@@ -106,7 +106,7 @@ export function ClientVehiclePicker({clients,vehicles,clientId,vehicleId,onClien
             <Avatar client={c} size="tiny"/><span><strong>{c.name}</strong>
               <small>{formatPhone(c.whatsapp)||'Sem WhatsApp'} · {vehicles.filter(v=>v.client_id===c.id).length} veículo(s)</small></span>
             {c.id===clientId&&<Check size={16}/>}</button>)}
-          {!filtered.length&&<div className="cx-choice-empty">{clients.length?'Nenhum cliente encontrado.':<AttentionNotice>Cadastre um cliente para começar.</AttentionNotice>}</div>}
+          {!filtered.length&&<div className="cx-choice-empty">{clients.some(c=>!c.archived_at)?'Nenhum cliente encontrado.':<AttentionNotice>Cadastre um cliente para começar.</AttentionNotice>}</div>}
         </div>
       </div>}
       <small className="cx-helper">O avatar e os dados vêm do cadastro do cliente.</small>

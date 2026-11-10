@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, CalendarPlus, Camera, ChevronLeft, ChevronRight, CarFront, FilePlus2, History, MessageCircle, Pencil, Phone, Plus, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarPlus, Camera, ChevronLeft, ChevronRight, CarFront, FilePlus2, History, MessageCircle, Pencil, Phone, Plus, Trash2, X } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Avatar, Button, CoinCount, Empty, ErrorText, Field, Input, PageHeading, Panel, SearchInput, Select, Status, TableWrap, Textarea } from '../components/UI'
 import { CarViewer, QuickCarViewer, VehicleStudioForm } from '../components/vehicle/DeferredVehicle'
@@ -74,20 +74,44 @@ function ClientForm({client,onDone,onClose}:{client?:Client;onDone:()=>void;onCl
     </div>
   </form>
 }
+/** Exclui o cliente da lista. Atendimentos, pagamentos e moedas continuam nos relatórios. */
+function DeleteClient({client,onDone,onClose}:{client:Client;onDone:()=>void;onClose:()=>void}){
+  const {data,save}=useStore()
+  const [busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null)
+  const cars=data.vehicles.filter(v=>v.client_id===client.id).length
+  const visits=data.service_orders.filter(o=>o.client_id===client.id).length
+  async function confirm(){
+    setBusy(true);setError(null)
+    try{await save('clients',{archived_at:new Date().toISOString()},client.id);onDone()}
+    catch(e){setError(e instanceof Error?e.message:String(e))}
+    finally{setBusy(false)}
+  }
+  return <div className="client-delete">
+    <p>Tem certeza que deseja excluir <strong>{client.name}</strong>?</p>
+    <p className="small-note">O cliente{cars?` e seus ${cars} veículo(s)`:''} deixa de aparecer na lista e nas novas
+      vendas e agendamentos.{visits?` Os ${visits} atendimento(s) já realizados, pagamentos e moedas continuam registrados no Financeiro.`:''}</p>
+    <ErrorText message={error}/>
+    <div className="form-actions"><Button type="button" variant="secondary" onClick={onClose} disabled={busy}>Cancelar</Button>
+      <Button type="button" variant="danger" onClick={()=>void confirm()} disabled={busy}><Trash2 size={15}/> {busy?'Excluindo...':'Excluir cliente'}</Button></div>
+  </div>
+}
 export function Clients(){
   const {data}=useStore(),navigate=useNavigate()
   const [search,setSearch]=useState(''),[modal,setModal]=useState(false),[editing,setEditing]=useState<Client|null>(null)
-  const filtered=useMemo(()=>data.clients.filter(c=>{
+  const [deleting,setDeleting]=useState<Client|null>(null)
+  const active=useMemo(()=>data.clients.filter(c=>!c.archived_at),[data.clients])
+  const activeCars=useMemo(()=>data.vehicles.filter(v=>active.some(c=>c.id===v.client_id)),[data.vehicles,active])
+  const filtered=useMemo(()=>active.filter(c=>{
     const plates=data.vehicles.filter(v=>v.client_id===c.id).map(v=>v.plate+' '+v.brand+' '+v.model).join(' ')
     return escapeSearch(`${c.name} ${c.whatsapp||''} ${plates}`).includes(escapeSearch(search))
-  }).sort((a,b)=>a.name.localeCompare(b.name)),[data.clients,data.vehicles,search])
+  }).sort((a,b)=>a.name.localeCompare(b.name)),[active,data.vehicles,search])
   function edit(client?:Client){setEditing(client||null);setModal(true)}
   return <>
     <PageHeading eyebrow="RELACIONAMENTO" title="Clientes e veículos"
       subtitle="Um cadastro completo para acompanhar cada cliente e todos os seus carros."
       actions={<Button onClick={()=>edit()}><Plus size={16}/> Novo cliente</Button>}/>
     <div className="filter-bar"><SearchInput value={search} onChange={setSearch} placeholder="Buscar nome, telefone ou placa..."/>
-      <div className="filter-right"><span className="tag">{filtered.length} clientes</span><span className="tag">{data.vehicles.length} veículos</span></div></div>
+      <div className="filter-right"><span className="tag">{filtered.length} clientes</span><span className="tag">{activeCars.length} veículos</span></div></div>
     {filtered.length?<div className="client-grid">{filtered.map(client=>{
       const cars=data.vehicles.filter(v=>v.client_id===client.id)
       const coins=sum(data.loyalty_ledger.filter(l=>l.client_id===client.id).map(l=>l.change))
@@ -97,6 +121,7 @@ export function Clients(){
         <header><Avatar client={client} size="large"/>
           <div className="client-card-id"><strong>{client.name}</strong><small>Cliente desde {date(client.created_at)}</small></div>
           <button className="icon-button" onClick={()=>edit(client)} aria-label={`Editar ${client.name}`}><Pencil size={15}/></button>
+          <button className="icon-button" onClick={()=>setDeleting(client)} aria-label={`Excluir ${client.name}`} title="Excluir cliente"><Trash2 size={15}/></button>
         </header>
         {wa?<a className="client-card-phone" href={wa} target="_blank" rel="noreferrer"><MessageCircle size={15}/>{formatPhone(client.whatsapp)}</a>:
           <span className="client-card-phone muted"><MessageCircle size={15}/>WhatsApp não informado</span>}
@@ -116,12 +141,15 @@ export function Clients(){
     {modal&&<Modal title={editing?'Editar cliente':'Cadastrar cliente'} onClose={()=>setModal(false)} wide>
       <ClientForm client={editing||undefined} onDone={()=>setModal(false)} onClose={()=>setModal(false)}/>
     </Modal>}
+    {deleting&&<Modal title="Excluir cliente" onClose={()=>setDeleting(null)}>
+      <DeleteClient client={deleting} onDone={()=>setDeleting(null)} onClose={()=>setDeleting(null)}/>
+    </Modal>}
   </>
 }
 export function ClientProfile(){
   const {id}=useParams(),{data}=useStore(),navigate=useNavigate()
-  const [showClient,setShowClient]=useState(false),[vehicleModal,setVehicleModal]=useState(false)
-  const client=data.clients.find(c=>c.id===id)
+  const [showClient,setShowClient]=useState(false),[vehicleModal,setVehicleModal]=useState(false),[deleting,setDeleting]=useState(false)
+  const client=data.clients.find(c=>c.id===id&&!c.archived_at)
   if(!client)return <Empty title="Cliente não encontrado" action={<Button onClick={()=>navigate('/clientes')}>Voltar aos clientes</Button>}/>
   const cars=data.vehicles.filter(v=>v.client_id===client.id)
   const orders=data.service_orders.filter(o=>o.client_id===client.id).sort((a,b)=>(b.completed_at||'').localeCompare(a.completed_at||''))
@@ -130,7 +158,7 @@ export function ClientProfile(){
   const quotes=data.quotes.filter(q=>q.client_id===client.id).sort((a,b)=>b.created_at.localeCompare(a.created_at))
   return <>
     <PageHeading eyebrow="PERFIL DO CLIENTE" title={client.name} subtitle="Histórico, veículos e relacionamento em um só lugar."
-      actions={<><Button variant="secondary" onClick={()=>navigate('/clientes')}><ArrowLeft size={15}/> Voltar</Button><Button onClick={()=>setVehicleModal(true)}><Plus size={16}/> Adicionar veículo</Button></>}/>
+      actions={<><Button variant="secondary" onClick={()=>navigate('/clientes')}><ArrowLeft size={15}/> Voltar</Button><Button variant="danger" onClick={()=>setDeleting(true)}><Trash2 size={15}/> Excluir</Button><Button onClick={()=>setVehicleModal(true)}><Plus size={16}/> Adicionar veículo</Button></>}/>
     <div className="dashboard-grid dashboard-grid-secondary">
       <Panel>
         <div className="profile-identity"><Avatar client={client} size="large"/><div><h2>{client.name}</h2>
@@ -174,6 +202,8 @@ export function ClientProfile(){
     </div>
     {showClient&&<Modal title="Editar cliente" wide onClose={()=>setShowClient(false)}><ClientForm client={client}
       onDone={()=>setShowClient(false)} onClose={()=>setShowClient(false)}/></Modal>}
+    {deleting&&<Modal title="Excluir cliente" onClose={()=>setDeleting(false)}>
+      <DeleteClient client={client} onDone={()=>navigate('/clientes')} onClose={()=>setDeleting(false)}/></Modal>}
     {vehicleModal&&<Modal title="Adicionar veículo" showroom onClose={()=>setVehicleModal(false)}><VehicleStudioForm clientId={client.id}
       onDone={()=>setVehicleModal(false)} onClose={()=>setVehicleModal(false)}/></Modal>}
   </>
