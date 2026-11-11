@@ -8,6 +8,7 @@ import { isConfigured, supabase } from './lib/supabase'
 import { demoCompany, demoProfile } from './lib/demo'
 import { DataProvider, useStore } from './lib/store'
 import { InventoryProvider } from './lib/inventory-store'
+import { BillingGate } from './components/billing/BillingGate'
 import { Login, Onboarding } from './pages/Login'
 import { loadDashboard, loadClients, loadServices, loadInventory, loadPriceCalculator, loadQuotes, loadAgenda, loadFinance, loadLoyalty, loadSettings, preloadRoute } from './lib/page-loaders'
 
@@ -124,7 +125,7 @@ function LiveApp(){
   // Never render an old account's data during a switch, even before the effect runs.
   if(profileFor!==user.id)return <Loading label="Verificando acesso..."/>
   if(!profile)return <Onboarding onDone={loadProfile}/>
-  return <DataProvider key={`${user.id}:${profile.company_id}`} companyId={profile.company_id} profile={profile} demo={false}><InventoryProvider><InnerRoutes/></InventoryProvider></DataProvider>
+  return <DataProvider key={`${user.id}:${profile.company_id}`} companyId={profile.company_id} profile={profile} demo={false}><InventoryProvider><BillingGate><InnerRoutes/></BillingGate></InventoryProvider></DataProvider>
 }
 
 export function App(){

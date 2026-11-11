@@ -14,7 +14,9 @@ Sistema web de gestão de estética automotiva. Construído diretamente neste re
 - Moedas após quitação integral, ranking, recompensas e resgate atômico.
 - Login, cadastro inicial de estabelecimento e isolamento por empresa com Supabase Auth + PostgreSQL + RLS.
 
-Fora desta versão: integração WhatsApp, gateway de pagamentos, lembretes, emissão de nota fiscal e recursos de IA sem finalidade clara.
+Assinatura: 20 dias grátis e depois plano pago via Stripe — ver [docs/billing-stripe.md](docs/billing-stripe.md).
+
+Fora desta versão: integração WhatsApp, lembretes, emissão de nota fiscal e recursos de IA sem finalidade clara.
 
 ## Prévia visual
 

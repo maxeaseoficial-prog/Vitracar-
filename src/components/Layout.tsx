@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Boxes, Calculator, CalendarDays, CarFront, ChevronRight, CircleDollarSign, Coins, FileText,
-  LayoutDashboard, LogOut, Menu, Settings2, Wrench, X } from 'lucide-react'
+  LayoutDashboard, LogOut, Menu, Settings2, Sparkles, Wrench, X } from 'lucide-react'
 import { useStore } from '../lib/store'
+import { useBilling } from '../lib/billing'
 import { supabase } from '../lib/supabase'
 import { date } from '../lib/utils'
 import { preloadRoute, warmNavigation } from '../lib/page-loaders'
@@ -22,6 +23,8 @@ const menus=[
 ]
 export function Layout(){
   const {company,profile,isDemo}=useStore()
+  const {billing,subscribe}=useBilling()
+  const [billingError,setBillingError]=useState<string|null>(null)
   const [open,setOpen]=useState(false)
   const {pathname}=useLocation()
   useEffect(()=>warmNavigation(window.location.pathname),[])
@@ -60,6 +63,11 @@ export function Layout(){
         <div className="topbar-left"><button className="menu-toggle" onClick={()=>setOpen(true)} aria-label="Abrir menu"><Menu size={20}/></button>
           <span className="breadcrumb-root">Workspace</span><ChevronRight size={14}/><span>{current.label}</span></div>
         <div className="topbar-right">
+          {billing&&!billing.paid&&billing.allowed&&<button type="button" className={`trial-badge ${billing.trial_days_left<=3?'trial-badge-urgent':''}`}
+            title={billing.is_admin?'Assinar o plano Lavoo':'Período de teste grátis'} disabled={!billing.is_admin}
+            onClick={()=>{setBillingError(null);subscribe('checkout').catch(e=>setBillingError(e instanceof Error?e.message:String(e)))}}>
+            <Sparkles size={14}/>{billing.trial_days_left} {billing.trial_days_left===1?'dia':'dias'}<span className="trial-badge-label">&nbsp;de teste{billing.is_admin?' · Assinar':''}</span>
+          </button>}
           <span className="today-top">{date(new Date().toISOString())}</span>
           <div className="top-separator"/>
           <div className="company-badge"><span className="company-initial">{company.name[0]||'V'}</span><span>{company.name}</span></div>
@@ -69,7 +77,7 @@ export function Layout(){
             aria-label="Sair da conta" title="Sair da conta"><LogOut size={18}/></button>}
         </div>
       </header>
-      <main className="content-container"><ErrorText message={logoutError}/><Outlet/></main>
+      <main className="content-container"><ErrorText message={logoutError}/><ErrorText message={billingError}/><Outlet/></main>
       <footer className="app-footer"><span>VitraCar © {new Date().getFullYear()}</span><span>Gestão automotiva com elegância.</span></footer>
     </div>
   </div>
