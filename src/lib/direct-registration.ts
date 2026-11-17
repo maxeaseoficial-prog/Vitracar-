@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { supabase, supabaseUrl } from './supabase'
 import { validateRegistration } from './password-policy'
 
 type RequestInput =
@@ -12,7 +12,7 @@ export async function enterWithRegistration(input: RequestInput): Promise<void> 
     if (!validation.ok) throw new Error(validation.message)
   }
   if (!supabase) throw new Error('Conexão indisponível. Tente novamente em instantes.')
-  const baseUrl = import.meta.env.VITE_SUPABASE_URL?.trim()
+  const baseUrl = supabaseUrl
   const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim()
   if (!baseUrl || !publishableKey) throw new Error('Cadastro indisponível neste ambiente.')
 

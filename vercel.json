@@ -4,7 +4,11 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/((?!api/).*)",
+      "source": "/sb/:path*",
+      "destination": "https://bgwpymtqmblntqqzxxms.supabase.co/:path*"
+    },
+    {
+      "source": "/((?!api/|sb/).*)",
       "destination": "/index.html"
     }
   ],

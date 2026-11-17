@@ -12,7 +12,7 @@ const js = ts.transpileModule(testSource, { compilerOptions: {target:ts.ScriptTa
 const input={action:'signup',email:' EXAMPLE@EXAMPLE.COM ',password:'Example1!',confirmPassword:'Example1!'}
 function setup({body={session:{access_token:'mock-access',refresh_token:'mock-refresh'}},status=200,setError=null,setData={session:{},user:{}},offline=false}={}){
  const calls=[],sessions=[]
- const ctx=vm.createContext({validateRegistration,AbortSignal,Response,testEnv:{VITE_SUPABASE_URL:'https://test.invalid/',VITE_SUPABASE_PUBLISHABLE_KEY:'mock-public-key'},
+ const ctx=vm.createContext({validateRegistration,supabaseUrl:'https://test.invalid/',AbortSignal,Response,testEnv:{VITE_SUPABASE_URL:'https://test.invalid/',VITE_SUPABASE_PUBLISHABLE_KEY:'mock-public-key'},
   supabase:{auth:{setSession:async value=>{sessions.push(value);return {data:setData,error:setError}}}},
   fetch:async(url,options)=>{calls.push({url,options});if(offline)throw Error('offline');return new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json'}})} })
  vm.runInContext(js,ctx)
