@@ -13,10 +13,11 @@ export const loadAgenda = once(() => import('../pages/Agenda'))
 export const loadFinance = once(() => import('../pages/Finance'))
 export const loadLoyalty = once(() => import('../pages/Loyalty'))
 export const loadSettings = once(() => import('../pages/Settings'))
+export const loadDownload = once(() => import('../pages/Download'))
 const routes: Record<string, () => Promise<unknown>> = {
   '/': loadDashboard, '/agenda': loadAgenda, '/clientes': loadClients,
   '/servicos': loadServices, '/calcular-preco': loadPriceCalculator, '/estoque': loadInventory, '/orcamentos': loadQuotes,
-  '/financeiro': loadFinance, '/fidelidade': loadLoyalty, '/configuracoes': loadSettings,
+  '/financeiro': loadFinance, '/fidelidade': loadLoyalty, '/configuracoes': loadSettings, '/download': loadDownload,
 }
 function economicalConnection() {
   const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection
@@ -33,7 +34,7 @@ export function warmNavigation(currentPath: string): () => void {
   let cancelled = false
   let timer: ReturnType<typeof setTimeout> | undefined
   let idle: number | undefined
-  const pending = Object.keys(routes).filter(path => path !== currentPath && path !== '/configuracoes')
+  const pending = Object.keys(routes).filter(path => path !== currentPath && path !== '/configuracoes' && path !== '/download')
   const schedule = () => {
     if (cancelled || !pending.length) return
     timer = setTimeout(() => {

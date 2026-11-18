@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Boxes, Calculator, CalendarDays, CarFront, ChevronRight, CircleDollarSign, Coins, FileText,
-  LayoutDashboard, LogOut, Menu, Settings2, Sparkles, Wrench, X } from 'lucide-react'
+  LayoutDashboard, LogOut, Menu, Settings2, Smartphone, Sparkles, Wrench, X } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { useBilling } from '../lib/billing'
 import { supabase } from '../lib/supabase'
@@ -19,7 +19,8 @@ const menus=[
   {to:'/estoque',label:'Estoque',icon:Boxes},
   {to:'/orcamentos',label:'Orçamentos',icon:FileText},
   {to:'/financeiro',label:'Financeiro',icon:CircleDollarSign},
-  {to:'/fidelidade',label:'Fidelidade',icon:Coins}
+  {to:'/fidelidade',label:'Fidelidade',icon:Coins},
+  {to:'/download',label:'Instalar app',icon:Smartphone}
 ]
 export function Layout(){
   const {company,profile,isDemo}=useStore()

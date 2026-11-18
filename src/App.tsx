@@ -10,7 +10,7 @@ import { DataProvider, useStore } from './lib/store'
 import { InventoryProvider } from './lib/inventory-store'
 import { BillingGate } from './components/billing/BillingGate'
 import { Login, Onboarding } from './pages/Login'
-import { loadDashboard, loadClients, loadServices, loadInventory, loadPriceCalculator, loadQuotes, loadAgenda, loadFinance, loadLoyalty, loadSettings, preloadRoute } from './lib/page-loaders'
+import { loadDashboard, loadClients, loadServices, loadInventory, loadPriceCalculator, loadQuotes, loadAgenda, loadFinance, loadLoyalty, loadSettings, loadDownload, preloadRoute } from './lib/page-loaders'
 
 // Cada página é baixada só quando aberta: o 3D (Three.js) e o PDF (jsPDF)
 // deixam de pesar na primeira carga.
@@ -26,6 +26,7 @@ const Agenda=lazy(()=>loadAgenda().then(m=>({default:m.Agenda})))
 const Finance=lazy(()=>loadFinance().then(m=>({default:m.Finance})))
 const Loyalty=lazy(()=>loadLoyalty().then(m=>({default:m.Loyalty})))
 const Settings=lazy(()=>loadSettings().then(m=>({default:m.Settings})))
+const Download=lazy(()=>loadDownload().then(m=>({default:m.Download})))
 
 // Última barreira: um erro inesperado mostra uma mensagem em vez de tela branca.
 class AppErrorBoundary extends Component<{children:ReactNode},{error:Error|null}>{
@@ -61,6 +62,7 @@ function InnerRoutes(){
     <Route path="/agenda" element={page(<Agenda/>)}/>
     <Route path="/financeiro" element={page(<Finance/>)}/>
     <Route path="/fidelidade" element={page(<Loyalty/>)}/>
+    <Route path="/download" element={page(<Download/>)}/>
     <Route path="/configuracoes" element={profile.role==='admin'?page(<Settings/>):<Navigate to="/" replace/>}/>
     <Route path="*" element={<Navigate to="/" replace/>}/>
   </Route></Routes>
