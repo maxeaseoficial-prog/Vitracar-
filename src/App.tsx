@@ -1,5 +1,5 @@
 import { Component, Suspense, lazy, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import type { User } from '@supabase/supabase-js'
 import type { Profile } from './types'
 import { Layout } from './components/Layout'
@@ -27,6 +27,7 @@ const Finance=lazy(()=>loadFinance().then(m=>({default:m.Finance})))
 const Loyalty=lazy(()=>loadLoyalty().then(m=>({default:m.Loyalty})))
 const Settings=lazy(()=>loadSettings().then(m=>({default:m.Settings})))
 const Download=lazy(()=>loadDownload().then(m=>({default:m.Download})))
+const DownloadPublic=lazy(()=>loadDownload().then(m=>({default:m.DownloadPublic})))
 
 // Última barreira: um erro inesperado mostra uma mensagem em vez de tela branca.
 class AppErrorBoundary extends Component<{children:ReactNode},{error:Error|null}>{
@@ -68,6 +69,7 @@ function InnerRoutes(){
   </Route></Routes>
 }
 function LiveApp(){
+  const {pathname}=useLocation()
   const [user,setUser]=useState<User|null|undefined>(undefined)
   const [profile,setProfile]=useState<Profile|null>(null)
   const [profileLoading,setProfileLoading]=useState(true)
@@ -123,7 +125,7 @@ function LiveApp(){
   if(user===undefined||profileLoading)return <Loading label="Verificando acesso..."/>
   if(error)return <div className="auth-side"><div className="auth-form"><h2>Erro de autenticação</h2>
     <ErrorText message={error}/><button className="btn btn-secondary" onClick={()=>void loadProfile()}>Tentar novamente</button></div></div>
-  if(!user)return <Login/>
+  if(!user)return pathname==='/download'?page(<DownloadPublic/>):<Login/>
   // Never render an old account's data during a switch, even before the effect runs.
   if(profileFor!==user.id)return <Loading label="Verificando acesso..."/>
   if(!profile)return <Onboarding onDone={loadProfile}/>

@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Check, Copy, Download as DownloadIcon, MoreVertical, Share, SquarePlus, Smartphone } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { Button, PageHeading, Panel } from '../components/UI'
 import { canPromptInstall, detectPlatform, isIosSafari, isStandalone, promptInstall, subscribeInstall } from '../lib/pwa'
 import './download.css'
@@ -73,5 +74,15 @@ export function Download(){
         {message&&!canPrompt&&<p className="dl-note">{message}</p>}
       </Panel>}
     </>}
+  </div>
+}
+
+/** Versão aberta (sem login) de /download: é só o passo a passo de instalação, sem nenhum dado da empresa.
+ *  Assim o link funciona direto no celular de quem ainda não entrou. */
+export function DownloadPublic(){
+  return <div className="dl-public">
+    <img src="/logo-lavoo-color.png" alt="Lavoo" className="dl-public-logo"/>
+    <Download/>
+    <Link to="/" className="btn btn-secondary dl-public-login">Entrar no sistema</Link>
   </div>
 }
