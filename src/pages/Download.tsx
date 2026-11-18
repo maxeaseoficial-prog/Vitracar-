@@ -38,7 +38,7 @@ export function Download(){
     {standalone?<Panel className="dl-card">
       <div className="dl-status"><span className="dl-status-icon"><Check size={22}/></span>
         <div><strong>O Lavoo já está instalado neste aparelho.</strong>
-          <p>Você está usando o app agora. Para instalar em outro celular, entre no Lavoo por ele e abra esta mesma página.</p></div></div>
+          <p>Você está usando o app agora. Para instalar em outro celular, abra este mesmo endereço (/download) por ele.</p></div></div>
     </Panel>:<>
       {canPrompt&&<Panel className="dl-card">
         <div className="dl-status"><span className="dl-status-icon"><Smartphone size={22}/></span>
@@ -67,7 +67,7 @@ export function Download(){
       </Panel>}
 
       {platform==='desktop'&&<Panel title="Instalar no celular" className="dl-card">
-        <p className="dl-note-top">Esta página precisa ser aberta <strong>no celular</strong>. Abra o endereço abaixo por lá, entre na sua conta e instale:</p>
+        <p className="dl-note-top">Esta página precisa ser aberta <strong>no celular</strong>. Abra o endereço abaixo por lá e siga os passos para instalar:</p>
         <div className="dl-copy"><span className="dl-url">{address}/download</span>
           <Button variant="secondary" size="small" onClick={()=>void copy()}>{copied?<><Check size={15}/> Copiado</>:<><Copy size={15}/> Copiar</>}</Button></div>
         {canPrompt&&<p className="dl-note">Também é possível instalar neste computador usando o botão acima.</p>}
